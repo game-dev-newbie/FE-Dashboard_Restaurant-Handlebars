@@ -83,7 +83,7 @@
                 {{#each data}}
                 <tr class="animate-fade-in" style="animation-delay: {{@index}}0ms">
                     <td>
-                        <code class="bg-stone-100 px-2 py-1 rounded text-sm font-mono">{{code}}</code>
+                        <code class="bg-stone-100 px-2 py-1 rounded text-sm font-mono font-bold">{{code}}</code>
                     </td>
                     <td>
                         <div class="flex items-center gap-3">
@@ -103,11 +103,12 @@
                         </span>
                     </td>
                     <td>
-                        <p class="font-medium">{{formatDateTime datetime}}</p>
+                        <p class="font-bold text-stone-900">{{formatTime datetime}}</p>
+                        <p class="text-sm text-stone-500">{{formatDate datetime}}</p>
                     </td>
                     <td>
                         {{#if tableName}}
-                        <span class="inline-flex items-center px-2.5 py-1 bg-stone-100 text-stone-700 rounded-lg text-sm font-medium">
+                        <span class="inline-flex items-center px-2.5 py-1 bg-stone-100 text-stone-700 rounded-lg text-sm font-bold">
                             {{tableName}}
                         </span>
                         {{else}}
@@ -136,23 +137,18 @@
                     </td>
                     <td class="text-right">
                         <div class="flex items-center justify-end gap-1">
-                            <button class="btn btn-icon btn-secondary" 
-                                    data-action="viewBooking" data-id="{{id}}" 
-                                    title="Chi tiết">
-                                <i class="fa-solid fa-eye"></i>
-                            </button>
                             {{#if (eq status 'PENDING')}}
-                            <button class="btn btn-icon btn-success" 
-                                    data-action="confirmBooking" data-id="{{id}}"
-                                    title="Xác nhận">
+                            <button class="btn btn-sm btn-success" 
+                                    data-action="confirmBooking" data-id="{{id}}">
                                 <i class="fa-solid fa-check"></i>
+                                <span>Xác nhận</span>
                             </button>
                             {{/if}}
                             {{#if (eq status 'CONFIRMED')}}
-                            <button class="btn btn-icon btn-primary" 
-                                    data-action="checkInBooking" data-id="{{id}}"
-                                    title="Check-in">
-                                <i class="fa-solid fa-circle"></i>
+                            <button class="btn btn-sm btn-primary" 
+                                    data-action="checkInBooking" data-id="{{id}}">
+                                <i class="fa-solid fa-circle-check"></i>
+                                <span>Check-in</span>
                             </button>
                             {{/if}}
                             <button class="btn btn-icon btn-secondary" 

@@ -165,7 +165,24 @@ const _restaurantTables = [
     { id: 10, restaurant_id: 1, name: 'Bàn VIP 1', capacity: 12, location: 'Phòng VIP', status: 'ACTIVE', view_image_url: null, view_note: 'Phòng riêng, có karaoke' }
 ];
 
-// ==================== BOOKINGS ====================
+// ==================== BOOKINGS (Dynamic dates based on current time) ====================
+// Helper function to create dates relative to now
+function getRelativeDate(hoursFromNow, minuteOffset = 0) {
+    const date = new Date();
+    date.setHours(date.getHours() + hoursFromNow);
+    date.setMinutes(minuteOffset);
+    date.setSeconds(0);
+    date.setMilliseconds(0);
+    return date.toISOString();
+}
+
+function getRelativeDateByDays(daysFromNow, hour, minute = 0) {
+    const date = new Date();
+    date.setDate(date.getDate() + daysFromNow);
+    date.setHours(hour, minute, 0, 0);
+    return date.toISOString();
+}
+
 const _bookings = [
     {
         id: 1,
@@ -173,13 +190,13 @@ const _bookings = [
         table_id: 5,
         user_id: 1,
         people_count: 4,
-        booking_time: '2024-12-08T11:30:00Z',
+        booking_time: getRelativeDate(1, 30), // 1 giờ 30 phút nữa
         status: 'CONFIRMED',
         deposit_amount: 200000,
         payment_status: 'PAID',
         note: '',
-        created_at: '2024-12-07T10:00:00Z',
-        updated_at: '2024-12-07T12:00:00Z'
+        created_at: getRelativeDate(-24),
+        updated_at: getRelativeDate(-22)
     },
     {
         id: 2,
@@ -187,13 +204,13 @@ const _bookings = [
         table_id: 2,
         user_id: 2,
         people_count: 2,
-        booking_time: '2024-12-08T12:00:00Z',
+        booking_time: getRelativeDate(2, 0), // 2 giờ nữa
         status: 'PENDING',
         deposit_amount: 0,
         payment_status: 'NONE',
         note: 'Kỷ niệm ngày cưới',
-        created_at: '2024-12-07T08:00:00Z',
-        updated_at: '2024-12-07T08:00:00Z'
+        created_at: getRelativeDate(-48),
+        updated_at: getRelativeDate(-48)
     },
     {
         id: 3,
@@ -201,13 +218,13 @@ const _bookings = [
         table_id: 8,
         user_id: 3,
         people_count: 6,
-        booking_time: '2024-12-08T12:30:00Z',
+        booking_time: getRelativeDate(3, 30), // 3 giờ 30 phút nữa
         status: 'CONFIRMED',
         deposit_amount: 500000,
         payment_status: 'PAID',
         note: '',
-        created_at: '2024-12-06T14:00:00Z',
-        updated_at: '2024-12-06T16:00:00Z'
+        created_at: getRelativeDate(-72),
+        updated_at: getRelativeDate(-70)
     },
     {
         id: 4,
@@ -215,13 +232,13 @@ const _bookings = [
         table_id: null,
         user_id: 4,
         people_count: 3,
-        booking_time: '2024-12-08T13:00:00Z',
+        booking_time: getRelativeDate(4, 0), // 4 giờ nữa
         status: 'PENDING',
         deposit_amount: 0,
         payment_status: 'NONE',
         note: 'Cần ghế trẻ em',
-        created_at: '2024-12-07T09:00:00Z',
-        updated_at: '2024-12-07T09:00:00Z'
+        created_at: getRelativeDate(-24),
+        updated_at: getRelativeDate(-24)
     },
     {
         id: 5,
@@ -229,13 +246,13 @@ const _bookings = [
         table_id: 10,
         user_id: 5,
         people_count: 8,
-        booking_time: '2024-12-08T18:00:00Z',
+        booking_time: getRelativeDateByDays(0, 19, 0), // Hôm nay 19:00
         status: 'CONFIRMED',
         deposit_amount: 1000000,
         payment_status: 'PAID',
         note: 'Tiệc sinh nhật, cần trang trí',
-        created_at: '2024-12-05T10:00:00Z',
-        updated_at: '2024-12-05T14:00:00Z'
+        created_at: getRelativeDate(-96),
+        updated_at: getRelativeDate(-94)
     },
     {
         id: 6,
@@ -243,13 +260,13 @@ const _bookings = [
         table_id: 3,
         user_id: 1,
         people_count: 4,
-        booking_time: '2024-12-07T19:00:00Z',
+        booking_time: getRelativeDate(-2), // 2 giờ trước
         status: 'CHECKED_IN',
         deposit_amount: 0,
         payment_status: 'NONE',
         note: '',
-        created_at: '2024-12-06T15:00:00Z',
-        updated_at: '2024-12-07T19:05:00Z'
+        created_at: getRelativeDate(-26),
+        updated_at: getRelativeDate(-2)
     },
     {
         id: 7,
@@ -257,13 +274,13 @@ const _bookings = [
         table_id: 1,
         user_id: 2,
         people_count: 2,
-        booking_time: '2024-12-07T12:00:00Z',
+        booking_time: getRelativeDateByDays(-1, 12, 0), // Hôm qua 12:00
         status: 'CANCELLED',
         deposit_amount: 0,
         payment_status: 'NONE',
         note: 'Khách có việc bận',
-        created_at: '2024-12-05T08:00:00Z',
-        updated_at: '2024-12-06T10:00:00Z'
+        created_at: getRelativeDate(-72),
+        updated_at: getRelativeDate(-48)
     },
     {
         id: 8,
@@ -271,13 +288,41 @@ const _bookings = [
         table_id: 6,
         user_id: 3,
         people_count: 5,
-        booking_time: '2024-12-06T18:30:00Z',
+        booking_time: getRelativeDateByDays(-2, 18, 30), // 2 ngày trước 18:30
         status: 'NO_SHOW',
         deposit_amount: 300000,
         payment_status: 'PAID',
         note: '',
-        created_at: '2024-12-04T09:00:00Z',
-        updated_at: '2024-12-06T19:30:00Z'
+        created_at: getRelativeDate(-120),
+        updated_at: getRelativeDate(-48)
+    },
+    {
+        id: 9,
+        restaurant_id: 1,
+        table_id: 7,
+        user_id: 4,
+        people_count: 5,
+        booking_time: getRelativeDateByDays(1, 12, 30), // Ngày mai 12:30
+        status: 'PENDING',
+        deposit_amount: 0,
+        payment_status: 'NONE',
+        note: 'Họp mặt bạn bè',
+        created_at: getRelativeDate(-6),
+        updated_at: getRelativeDate(-6)
+    },
+    {
+        id: 10,
+        restaurant_id: 1,
+        table_id: 9,
+        user_id: 5,
+        people_count: 6,
+        booking_time: getRelativeDateByDays(1, 18, 0), // Ngày mai 18:00
+        status: 'CONFIRMED',
+        deposit_amount: 300000,
+        payment_status: 'PAID',
+        note: 'Tiệc chia tay đồng nghiệp',
+        created_at: getRelativeDate(-12),
+        updated_at: getRelativeDate(-10)
     }
 ];
 

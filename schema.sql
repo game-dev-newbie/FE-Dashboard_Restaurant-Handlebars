@@ -17,6 +17,18 @@ CREATE TABLE `user_auth_providers` (
   `updated_at` datetime
 );
 
+CREATE TABLE `auth_tokens` (
+  `id` bigint PRIMARY KEY AUTO_INCREMENT,
+  `subject_id` bigint,
+  `subject_type` varchar(50),
+  `token_id` varchar(255),
+  `type` varchar(50),
+  `is_revoked` boolean DEFAULT false,
+  `expires_at` datetime,
+  `created_at` datetime,
+  `updated_at` datetime
+);
+
 CREATE TABLE `restaurants` (
   `id` bigint PRIMARY KEY AUTO_INCREMENT,
   `name` varchar(255),
@@ -33,6 +45,8 @@ CREATE TABLE `restaurants` (
   `average_rating` float DEFAULT 0,
   `review_count` int DEFAULT 0,
   `invite_code` varchar(255) UNIQUE,
+  `open_time` time,
+  `close_time` time,
   `created_at` datetime,
   `updated_at` datetime
 );
@@ -43,8 +57,8 @@ CREATE TABLE `restaurant_accounts` (
   `full_name` varchar(255),
   `email` varchar(255) UNIQUE,
   `password_hash` varchar(255),
-  `role` varchar(255),
-  `status` varchar(255),
+  `role` varchar(50),
+  `status` varchar(50),
   `avatar_url` varchar(255),
   `created_at` datetime,
   `updated_at` datetime
@@ -56,7 +70,7 @@ CREATE TABLE `restaurant_tables` (
   `name` varchar(255),
   `capacity` int,
   `location` varchar(255),
-  `status` varchar(255),
+  `status` varchar(50),
   `view_image_url` varchar(255),
   `view_note` varchar(255),
   `created_at` datetime,
@@ -70,9 +84,9 @@ CREATE TABLE `bookings` (
   `user_id` bigint,
   `people_count` int,
   `booking_time` datetime,
-  `status` varchar(255),
+  `status` varchar(50),
   `deposit_amount` int DEFAULT 0,
-  `payment_status` varchar(255) DEFAULT 'NONE',
+  `payment_status` varchar(50) DEFAULT 'NONE',
   `note` text,
   `created_at` datetime,
   `updated_at` datetime
@@ -82,8 +96,8 @@ CREATE TABLE `payments` (
   `id` bigint PRIMARY KEY AUTO_INCREMENT,
   `booking_id` bigint,
   `amount` int,
-  `provider` varchar(255),
-  `status` varchar(255),
+  `provider` varchar(50),
+  `status` varchar(50),
   `created_at` datetime,
   `updated_at` datetime
 );
@@ -95,7 +109,7 @@ CREATE TABLE `reviews` (
   `user_id` bigint,
   `rating` int,
   `comment` text,
-  `status` varchar(255) DEFAULT 'VISIBLE',
+  `status` varchar(50) DEFAULT 'VISIBLE',
   `created_at` datetime,
   `updated_at` datetime
 );
@@ -111,10 +125,10 @@ CREATE TABLE `notifications` (
   `id` bigint PRIMARY KEY AUTO_INCREMENT,
   `user_id` bigint,
   `restaurant_id` bigint,
-  `type` varchar(255),
+  `type` varchar(50),
   `title` varchar(255),
   `message` text,
-  `channel` varchar(255) DEFAULT 'IN_APP',
+  `channel` varchar(50) DEFAULT 'IN_APP',
   `is_read` boolean DEFAULT false,
   `read_at` datetime,
   `created_at` datetime,
@@ -125,7 +139,7 @@ CREATE TABLE `restaurant_images` (
   `id` bigint PRIMARY KEY AUTO_INCREMENT,
   `restaurant_id` bigint,
   `file_path` varchar(255),
-  `type` varchar(255),
+  `type` varchar(50),
   `caption` varchar(255),
   `is_primary` boolean DEFAULT false,
   `created_at` datetime
@@ -133,13 +147,19 @@ CREATE TABLE `restaurant_images` (
 
 CREATE UNIQUE INDEX `user_auth_providers_index_0` ON `user_auth_providers` (`provider`, `provider_user_id`);
 
-CREATE INDEX `bookings_index_1` ON `bookings` (`restaurant_id`, `booking_time`);
+CREATE INDEX `auth_tokens_index_1` ON `auth_tokens` (`subject_id`, `subject_type`, `type`);
 
-CREATE INDEX `bookings_index_2` ON `bookings` (`user_id`, `booking_time`);
+CREATE UNIQUE INDEX `auth_tokens_index_2` ON `auth_tokens` (`token_id`);
 
-CREATE UNIQUE INDEX `reviews_index_3` ON `reviews` (`booking_id`);
+CREATE INDEX `auth_tokens_index_3` ON `auth_tokens` (`expires_at`);
 
-CREATE UNIQUE INDEX `favorite_restaurants_index_4` ON `favorite_restaurants` (`user_id`, `restaurant_id`);
+CREATE INDEX `bookings_index_4` ON `bookings` (`restaurant_id`, `booking_time`);
+
+CREATE INDEX `bookings_index_5` ON `bookings` (`user_id`, `booking_time`);
+
+CREATE UNIQUE INDEX `reviews_index_6` ON `reviews` (`booking_id`);
+
+CREATE UNIQUE INDEX `favorite_restaurants_index_7` ON `favorite_restaurants` (`user_id`, `restaurant_id`);
 
 ALTER TABLE `user_auth_providers` ADD FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
 

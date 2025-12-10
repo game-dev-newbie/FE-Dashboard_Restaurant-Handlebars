@@ -1,9 +1,23 @@
 <!-- Dashboard / Overview Page - Tailwind UI -->
 
 <!-- Page Header -->
-<div class="mb-6">
-    <h1 class="text-2xl font-bold text-stone-900">Tổng quan</h1>
-    <p class="text-stone-500">Chào mừng trở lại! Đây là tình hình nhà hàng hôm nay.</p>
+<div class="mb-6 flex items-center justify-between flex-wrap gap-4">
+    <div>
+        <h1 class="text-2xl font-bold text-stone-900">Tổng quan</h1>
+        <p class="text-stone-500">Chào mừng trở lại! Đây là tình hình nhà hàng hôm nay.</p>
+    </div>
+    <!-- Date Time Clock Widget -->
+    <div class="datetime-clock card p-4" id="datetimeClock">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-primary-100 rounded-xl flex items-center justify-center">
+                <i class="fa-regular fa-clock text-primary-600"></i>
+            </div>
+            <div>
+                <div class="text-xl font-bold text-stone-900" id="clockTime">--:--:--</div>
+                <div class="text-sm text-stone-500" id="clockDate">-- / -- / ----</div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <!-- KPI Cards Grid -->
@@ -119,29 +133,33 @@
         <table class="data-table">
             <thead>
                 <tr>
-                    <th class="w-16">Giờ</th>
-                    <th>Tên khách</th>
-                    <th class="w-20 text-center">Số người</th>
-                    <th class="w-24">Bàn</th>
-                    <th class="w-32">Trạng thái</th>
-                    <th class="w-28 text-right">Thao tác</th>
+                    <th>Thời gian</th>
+                    <th>Khách hàng</th>
+                    <th class="text-center">Số người</th>
+                    <th class="text-center">Bàn</th>
+                    <th class="text-center">Trạng thái</th>
+                    <th class="text-right">Thao tác</th>
                 </tr>
             </thead>
             <tbody>
                 {{#each upcomingBookings}}
                 <tr class="animate-fade-in" style="animation-delay: {{@index}}00ms">
                     <td>
-                        <span class="font-semibold text-stone-900">{{time}}</span>
+                        <p class="font-bold text-stone-900">{{time}}</p>
+                        <p class="text-sm text-stone-500">{{date}}</p>
                     </td>
                     <td>
-                        <div class="flex items-center gap-2">
-                            <div class="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center text-primary-700 font-medium text-sm flex-shrink-0">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center text-primary-700 font-semibold">
                                 {{substring customerName 0 1}}
                             </div>
-                            <span class="truncate">{{customerName}}</span>
+                            <div>
+                                <p class="font-medium text-stone-900">{{customerName}}</p>
+                                <p class="text-sm text-stone-500">{{customerPhone}}</p>
+                            </div>
                         </div>
                     </td>
-                    <td class="text-center">
+                    <td>
                         <span class="inline-flex items-center gap-1 text-stone-600">
                             <i class="fa-solid fa-users text-xs"></i>
                             {{guests}}
@@ -149,44 +167,44 @@
                     </td>
                     <td>
                         {{#if table}}
-                        <span class="inline-flex items-center px-2 py-1 bg-stone-100 rounded text-sm font-medium text-stone-700">
+                        <span class="inline-flex items-center px-2.5 py-1 bg-stone-100 text-stone-700 rounded-lg text-sm font-bold">
                             {{table}}
                         </span>
                         {{else}}
-                        <span class="text-stone-400 text-sm">Chưa gán</span>
+                        <span class="text-stone-400">—</span>
                         {{/if}}
                     </td>
                     <td>
                         {{#if (eq status 'PENDING')}}
-                        <span class="badge badge-pending whitespace-nowrap">Chờ xác nhận</span>
+                        <span class="badge badge-pending">Chờ xác nhận</span>
                         {{else if (eq status 'CONFIRMED')}}
-                        <span class="badge badge-confirmed whitespace-nowrap">Đã xác nhận</span>
+                        <span class="badge badge-confirmed">Đã xác nhận</span>
                         {{else if (eq status 'CHECKED_IN')}}
-                        <span class="badge badge-checked-in whitespace-nowrap">Đã check-in</span>
+                        <span class="badge badge-checked-in">Đã check-in</span>
                         {{else if (eq status 'CANCELLED')}}
-                        <span class="badge badge-cancelled whitespace-nowrap">Đã hủy</span>
+                        <span class="badge badge-cancelled">Đã hủy</span>
                         {{else}}
-                        <span class="badge badge-no-show whitespace-nowrap">{{status}}</span>
+                        <span class="badge badge-no-show">{{status}}</span>
                         {{/if}}
                     </td>
-                    <td>
-                        <div class="flex items-center gap-1">
-                            <button class="btn btn-icon btn-secondary" 
-                                    data-action="viewBooking" data-id="{{id}}" 
-                                    title="Chi tiết">
-                                <i class="fa-solid fa-eye"></i>
-                            </button>
+                    <td class="text-right">
+                        <div class="flex items-center justify-end gap-2">
                             {{#if (eq status 'PENDING')}}
-                            <button class="btn btn-icon btn-success" 
-                                    data-action="confirmBooking" data-id="{{id}}"
-                                    title="Xác nhận">
+                            <button class="btn btn-sm btn-success" 
+                                    data-action="confirmBooking" data-id="{{id}}">
                                 <i class="fa-solid fa-check"></i>
+                                <span>Xác nhận</span>
                             </button>
                             {{/if}}
-                            <button class="btn btn-icon btn-outline text-red-500 hover:bg-red-50" 
-                                    data-action="cancelBooking" data-id="{{id}}"
-                                    title="Huỷ">
+                            <button class="btn btn-sm btn-secondary" 
+                                    data-action="viewBooking" data-id="{{id}}">
+                                <i class="fa-solid fa-eye"></i>
+                                <span>Chi tiết</span>
+                            </button>
+                            <button class="btn btn-sm btn-outline text-red-500 hover:bg-red-50" 
+                                    data-action="cancelBooking" data-id="{{id}}">
                                 <i class="fa-solid fa-xmark"></i>
+                                <span>Huỷ</span>
                             </button>
                         </div>
                     </td>
@@ -195,7 +213,7 @@
                 <tr>
                     <td colspan="6">
                         <div class="empty-state py-8">
-                            <i class="fa-solid fa-circle"></i>
+                            <i class="fa-solid fa-inbox"></i>
                             <p class="text-stone-500">Không có booking sắp tới</p>
                             <a href="#/bookings" class="btn btn-primary mt-4" data-nav="/bookings">
                                 Xem tất cả booking

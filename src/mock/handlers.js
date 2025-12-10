@@ -36,8 +36,15 @@ export const MockHandlers = {
         
         console.log('🔐 Mock login success:', account.email);
         
+        // Tạo mock tokens với timestamp để unique
+        const timestamp = Date.now();
+        const accessToken = `mock_access_token_${account.role.toLowerCase()}_${timestamp}`;
+        const refreshToken = `mock_refresh_token_${account.role.toLowerCase()}_${timestamp}`;
+        
         return {
-            token: 'mock_jwt_token_' + account.role.toLowerCase(),
+            accessToken,
+            refreshToken,
+            token: accessToken, // Legacy support
             user: {
                 id: account.id,
                 name: account.full_name,
@@ -67,11 +74,13 @@ export const MockHandlers = {
             .map(b => {
                 const user = MOCK_DATA.getUser(b.user_id);
                 const table = b.table_id ? MOCK_DATA.getTable(b.table_id) : null;
-                const time = new Date(b.booking_time);
+                const bookingDate = new Date(b.booking_time);
                 return {
                     id: b.id,
-                    time: time.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
+                    time: bookingDate.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
+                    date: bookingDate.toLocaleDateString('vi-VN'),
                     customerName: user ? user.display_name : 'Khách',
+                    customerPhone: user ? user.phone : '',
                     guests: b.people_count,
                     table: table ? table.name : null,
                     status: b.status

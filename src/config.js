@@ -13,7 +13,9 @@ export const CONFIG = {
 
   // Các khóa lưu trữ trong LocalStorage
   STORAGE_KEYS: {
-    TOKEN: "auth_token",
+    ACCESS_TOKEN: "access_token",
+    REFRESH_TOKEN: "refresh_token",
+    TOKEN: "auth_token",  // Legacy - kept for backward compatibility
     USER: "user_info",
     REMEMBER_ME: "remember_me",
   },
