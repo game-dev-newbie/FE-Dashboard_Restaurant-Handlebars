@@ -156,10 +156,46 @@ export const AccountsView = {
             const result = await AccountsService.changeRole(accountId, newRole);
             if (result.success) {
                 App.showSuccess('Đã thay đổi vai trò!');
-                App.reload();
+                
+                // Update DOM directly to avoid page reload and tab switch
+                const button = document.querySelector(`button[data-account-id="${accountId}"][data-action="change-role"]`);
+                if (button) {
+                    // Update button data attribute
+                    button.dataset.currentRole = newRole;
+
+                    // Update Badge in the 2nd column
+                    const row = button.closest('tr');
+                    const badgeCell = row.cells[1];
+                    if (badgeCell) {
+                        badgeCell.innerHTML = this.getRoleBadge(newRole);
+                    }
+                }
             }
         } catch (error) {
+            console.error('Change role error:', error);
             App.showError('Có lỗi xảy ra. Vui lòng thử lại.');
+        }
+    },
+
+    getRoleBadge(role) {
+        if (role === 'OWNER') {
+            return `
+                <span class="inline-flex items-center gap-1 px-2 py-1 bg-primary-100 text-primary-700 rounded-full text-sm font-medium">
+                    <i class="fa-solid fa-crown"></i>
+                    Chủ sở hữu
+                </span>`;
+        } else if (role === 'MANAGER') {
+            return `
+                <span class="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
+                    <i class="fa-solid fa-briefcase"></i>
+                    Quản lý
+                </span>`;
+        } else {
+            return `
+                <span class="inline-flex items-center gap-1 px-2 py-1 bg-stone-100 text-stone-700 rounded-full text-sm font-medium">
+                    <i class="fa-solid fa-user"></i>
+                    Nhân viên
+                </span>`;
         }
     }
 };
