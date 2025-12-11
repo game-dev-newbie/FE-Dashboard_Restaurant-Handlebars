@@ -112,7 +112,7 @@ export const ApiService = {
         } catch (error) {
             // Refresh thất bại -> đăng xuất
             this.clearTokens();
-            window.location.hash = '#/login';
+            window.location.pathname = '/login';
             throw error;
         }
     },

@@ -113,6 +113,8 @@
                     <td>
                         {{#if (eq status 'ACTIVE')}}
                         <span class="badge badge-confirmed">Hoạt động</span>
+                        {{else if (eq status 'REJECTED')}}
+                        <span class="badge badge-cancelled">Đã từ chối</span>
                         {{else}}
                         <span class="badge badge-no-show">Đã khoá</span>
                         {{/if}}
@@ -129,7 +131,7 @@
                                 <i class="fa-solid fa-unlock"></i>
                             </button>
                             {{/if}}
-                            <button class="btn btn-icon btn-secondary" data-action="change-role" data-account-id="{{id}}" title="Đổi vai trò">
+                            <button class="btn btn-icon btn-secondary" data-action="change-role" data-account-id="{{id}}" data-current-role="{{role}}" data-account-name="{{name}}" title="Đổi vai trò">
                                 <i class="fa-solid fa-user-gear"></i>
                             </button>
                         </div>
@@ -150,4 +152,47 @@
     {{/if}}
 </div>
 
-
+<!-- Change Role Modal -->
+<div id="changeRoleModal" class="modal hidden">
+    <div class="modal-backdrop" onclick="closeModal('changeRoleModal')"></div>
+    <div class="modal-content max-w-md">
+        <div class="modal-header">
+            <h3 class="modal-title">Đổi vai trò</h3>
+            <button class="modal-close" onclick="closeModal('changeRoleModal')">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <p class="text-stone-600 mb-4">Chọn vai trò mới cho <span id="changeRoleAccountName" class="font-semibold"></span>:</p>
+            <input type="hidden" id="changeRoleAccountId" value="">
+            <div class="space-y-3" id="roleOptions">
+                <label class="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-stone-50 transition-colors role-option">
+                    <input type="radio" name="newRole" value="MANAGER" class="w-4 h-4 text-primary-600">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-briefcase text-blue-500"></i>
+                            <span class="font-medium">Quản lý</span>
+                        </div>
+                        <p class="text-sm text-stone-500">Có thể duyệt đặt bàn, quản lý nhân viên</p>
+                    </div>
+                </label>
+                <label class="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-stone-50 transition-colors role-option">
+                    <input type="radio" name="newRole" value="STAFF" class="w-4 h-4 text-primary-600">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-user text-stone-500"></i>
+                            <span class="font-medium">Nhân viên</span>
+                        </div>
+                        <p class="text-sm text-stone-500">Xem và xử lý đặt bàn cơ bản</p>
+                    </div>
+                </label>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal('changeRoleModal')">Hủy</button>
+            <button class="btn btn-primary" id="confirmChangeRoleBtn">
+                <i class="fa-solid fa-check"></i> Xác nhận
+            </button>
+        </div>
+    </div>
+</div>

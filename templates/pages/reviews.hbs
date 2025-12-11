@@ -103,11 +103,25 @@
                     <p class="text-sm text-stone-600">{{ownerReply}}</p>
                 </div>
                 {{else}}
-                <button class="btn btn-sm btn-outline text-primary-600" 
-                        data-action="replyReview" data-id="{{id}}">
-                    <i class="fa-solid fa-comment"></i>
-                    Phản hồi
-                </button>
+                <div class="reply-section">
+                    <button class="btn btn-sm btn-outline text-primary-600" 
+                            data-action="replyReview" data-id="{{id}}">
+                        <i class="fa-solid fa-comment"></i>
+                        Phản hồi
+                    </button>
+                    <form class="reply-form mt-3 p-3 bg-stone-50 rounded-lg hidden" 
+                          data-review-id="{{id}}">
+                        <textarea class="form-input w-full" rows="3" 
+                                  placeholder="Nhập phản hồi của bạn..." required></textarea>
+                        <div class="flex gap-2 mt-2 justify-end">
+                            <button type="button" class="btn btn-sm btn-secondary" 
+                                    data-action="cancelReply" data-id="{{id}}">Hủy</button>
+                            <button type="submit" class="btn btn-sm btn-primary">
+                                <i class="fa-solid fa-paper-plane"></i> Gửi
+                            </button>
+                        </div>
+                    </form>
+                </div>
                 {{/if}}
             </div>
         </div>

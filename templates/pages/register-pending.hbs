@@ -1,0 +1,71 @@
+<!-- Register Pending Page - Waiting for Approval -->
+
+<div class="text-center">
+    <!-- Success Icon -->
+    <div class="w-20 h-20 rounded-full bg-green-100 mx-auto mb-6 flex items-center justify-center">
+        <i class="fa-solid fa-check text-4xl text-green-600"></i>
+    </div>
+
+    <h2 class="text-2xl font-bold text-stone-900 mb-2">Đăng ký thành công!</h2>
+    <p class="text-stone-600 mb-8">Yêu cầu của bạn đã được gửi đến quản lý nhà hàng.</p>
+
+    <!-- Status Card -->
+    <div class="bg-amber-50 border border-amber-200 rounded-xl p-6 mb-8 text-left">
+        <div class="flex items-start gap-4">
+            <div class="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
+                <i class="fa-solid fa-clock text-amber-600 text-xl"></i>
+            </div>
+            <div>
+                <h3 class="font-semibold text-amber-800 mb-1">Đang chờ duyệt</h3>
+                <p class="text-sm text-amber-700">
+                    Tài khoản của bạn đang được quản lý xem xét. Bạn sẽ có thể đăng nhập 
+                    sau khi tài khoản được duyệt.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Timeline -->
+    <div class="text-left mb-8">
+        <h4 class="font-semibold text-stone-800 mb-4">Quy trình xử lý</h4>
+        <div class="space-y-4">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full bg-green-500 text-white flex items-center justify-center text-sm font-semibold">
+                    <i class="fa-solid fa-check text-xs"></i>
+                </div>
+                <div>
+                    <p class="font-medium text-stone-900">Gửi yêu cầu đăng ký</p>
+                    <p class="text-sm text-stone-500">Đã hoàn thành</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full bg-amber-500 text-white flex items-center justify-center text-sm font-semibold animate-pulse">
+                    2
+                </div>
+                <div>
+                    <p class="font-medium text-stone-900">Chờ quản lý duyệt</p>
+                    <p class="text-sm text-stone-500">Đang xử lý...</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full bg-stone-200 text-stone-500 flex items-center justify-center text-sm font-semibold">
+                    3
+                </div>
+                <div>
+                    <p class="font-medium text-stone-500">Đăng nhập và làm việc</p>
+                    <p class="text-sm text-stone-400">Chưa hoàn thành</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Button -->
+    <a href="/login" data-nav="/login" class="btn btn-primary w-full">
+        <i class="fa-solid fa-right-to-bracket"></i>
+        Đăng nhập ngay
+    </a>
+
+    <p class="text-sm text-stone-500 mt-4">
+        Nếu tài khoản đã được duyệt, bạn có thể đăng nhập ngay.
+    </p>
+</div>

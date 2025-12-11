@@ -1,6 +1,6 @@
 /**
- * SPA Router - Điều hướng dựa trên Hash URL
- * Ví dụ: yoursite.com/#/dashboard, yoursite.com/#/bookings
+ * SPA Router - Điều hướng dựa trên History API
+ * Ví dụ: yoursite.com/dashboard, yoursite.com/bookings
  */
 import { CONFIG } from './config.js';
 import { AuthService } from './services/auth.service.js';
@@ -30,28 +30,27 @@ export const Router = {
      * Chuyển hướng đến một route
      */
     navigate(path) {
-        window.location.hash = '#' + path;
+        history.pushState({}, '', path);
+        this.handleRoute();
     },
 
     /**
-     * Lấy đường dẫn hiện tại từ hash URL
+     * Lấy đường dẫn hiện tại từ URL
      */
     getCurrentPath() {
-        const hash = window.location.hash.slice(1) || '/';
-        return hash.split('?')[0];
+        const path = window.location.pathname || '/';
+        return path.split('?')[0];
     },
 
     /**
-     * Lấy query parameters từ hash URL hiện tại
+     * Lấy query parameters từ URL hiện tại
      */
     getQueryParams() {
-        const hash = window.location.hash.slice(1);
-        const queryIndex = hash.indexOf('?');
-        if (queryIndex === -1) return {};
+        const searchStr = window.location.search.slice(1);
+        if (!searchStr) return {};
         
-        const queryStr = hash.slice(queryIndex + 1);
         const params = {};
-        queryStr.split('&').forEach(pair => {
+        searchStr.split('&').forEach(pair => {
             const [key, value] = pair.split('=');
             if (key) params[decodeURIComponent(key)] = decodeURIComponent(value || '');
         });
@@ -149,7 +148,7 @@ export const Router = {
      * Khởi tạo Router
      */
     init() {
-        window.addEventListener('hashchange', () => this.handleRoute());
+        window.addEventListener('popstate', () => this.handleRoute());
         this.handleRoute();
     }
 };

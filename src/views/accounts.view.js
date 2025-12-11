@@ -56,12 +56,55 @@ export const AccountsView = {
         });
 
         document.querySelectorAll('[data-action="change-role"]').forEach(btn => {
-            btn.addEventListener('click', async (e) => {
-                const accountId = e.target.dataset.accountId;
-                const newRole = e.target.dataset.newRole;
-                await this.handleChangeRole(accountId, newRole, App);
+            btn.addEventListener('click', (e) => {
+                const button = e.target.closest('[data-action="change-role"]');
+                const accountId = button.dataset.accountId;
+                const currentRole = button.dataset.currentRole;
+                const accountName = button.dataset.accountName;
+                this.showChangeRoleModal(accountId, currentRole, accountName, App);
             });
         });
+    },
+
+    showChangeRoleModal(accountId, currentRole, accountName, App) {
+        document.getElementById('changeRoleAccountId').value = accountId;
+        document.getElementById('changeRoleAccountName').textContent = accountName;
+        
+        // Reset all radio buttons and enable them
+        document.querySelectorAll('input[name="newRole"]').forEach(radio => {
+            radio.checked = false;
+            radio.disabled = false;
+            radio.closest('label').classList.remove('opacity-50', 'cursor-not-allowed', 'bg-stone-100');
+        });
+        
+        // Disable and mark current role
+        const currentRoleRadio = document.querySelector(`input[name="newRole"][value="${currentRole}"]`);
+        if (currentRoleRadio) {
+            currentRoleRadio.disabled = true;
+            currentRoleRadio.closest('label').classList.add('opacity-50', 'cursor-not-allowed', 'bg-stone-100');
+        }
+        
+        window.openModal('changeRoleModal');
+        
+        // Bind confirm button
+        const confirmBtn = document.getElementById('confirmChangeRoleBtn');
+        const newConfirmBtn = confirmBtn.cloneNode(true); // Remove old listeners
+        confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+        newConfirmBtn.addEventListener('click', () => this.handleConfirmChangeRole(App));
+    },
+
+    async handleConfirmChangeRole(App) {
+        const accountId = document.getElementById('changeRoleAccountId').value;
+        const selectedRole = document.querySelector('input[name="newRole"]:checked');
+        
+        if (!selectedRole) {
+            App.showError('Vui lòng chọn vai trò mới');
+            return;
+        }
+        
+        const newRole = selectedRole.value;
+        await this.handleChangeRole(accountId, newRole, App);
+        window.closeModal('changeRoleModal');
     },
 
     async handleApprove(accountId, App) {
@@ -109,7 +152,6 @@ export const AccountsView = {
     },
 
     async handleChangeRole(accountId, newRole, App) {
-        if (!confirm(`Bạn có chắc muốn đổi vai trò thành ${newRole}?`)) return;
         try {
             const result = await AccountsService.changeRole(accountId, newRole);
             if (result.success) {

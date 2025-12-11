@@ -300,6 +300,23 @@ export const MockHandlers = {
         return { data: reviews, total: reviews.length };
     },
 
+    async getReviewById(id) {
+        await this.delay();
+        const r = MOCK_DATA.reviews.find(r => r.id === parseInt(id));
+        if (!r) return null;
+        const user = MOCK_DATA.getUser(r.user_id);
+        return {
+            id: r.id,
+            rating: r.rating,
+            content: r.comment,
+            customerName: user ? user.display_name : 'Khách',
+            customerAvatar: user ? user.avatar_url : null,
+            ownerReply: r.owner_reply,
+            createdAt: r.created_at,
+            isVisible: r.status === 'VISIBLE'
+        };
+    },
+
     async replyReview(id, reply) {
         await this.delay();
         const review = MOCK_DATA.reviews.find(r => r.id === parseInt(id));
@@ -326,14 +343,32 @@ export const MockHandlers = {
     async getNotifications(params = {}) {
         await this.delay();
         
-        let notifications = MOCK_DATA.notifications.map(n => ({
-            id: n.id,
-            type: n.type,
-            title: n.title,
-            content: n.message,
-            createdAt: n.created_at,
-            isRead: n.is_read
-        }));
+        let notifications = MOCK_DATA.notifications.map(n => {
+            let content = n.message;
+            
+            // Dynamically generate booking notification message with actual booking time
+            if (n.booking_id && (n.type === 'BOOKING_CREATED' || n.type === 'BOOKING_CONFIRMED')) {
+                const booking = MOCK_DATA.bookings.find(b => b.id === n.booking_id);
+                if (booking) {
+                    const user = MOCK_DATA.getUser(booking.user_id);
+                    const bookingTime = new Date(booking.booking_time);
+                    const timeStr = bookingTime.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+                    content = `Khách ${user?.display_name || 'N/A'} đã đặt bàn cho ${booking.people_count} người lúc ${timeStr}`;
+                }
+            }
+            
+            return {
+                id: n.id,
+                type: n.type,
+                title: n.title,
+                content,
+                createdAt: n.created_at,
+                isRead: n.is_read,
+                bookingId: n.booking_id,
+                reviewId: n.review_id,
+                accountId: n.account_id
+            };
+        });
         
         if (params.is_read === 'false') {
             notifications = notifications.filter(n => !n.isRead);
@@ -436,6 +471,22 @@ export const MockHandlers = {
                 createdAt: a.created_at
             }));
         return { data: accounts };
+    },
+
+    async getAccountById(id) {
+        await this.delay();
+        const a = MOCK_DATA.restaurantAccounts.find(a => a.id === parseInt(id));
+        if (!a) return null;
+        return {
+            id: a.id,
+            name: a.full_name,
+            email: a.email,
+            phone: a.phone || null,
+            role: a.role,
+            status: a.status,
+            avatar: a.avatar_url,
+            createdAt: a.created_at
+        };
     },
 
     async approveAccount(id) {

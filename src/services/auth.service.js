@@ -69,6 +69,24 @@ export const AuthService = {
     },
 
     /**
+     * Yêu cầu đặt lại mật khẩu
+     */
+    async forgotPassword(email) {
+        await MockHandlers.delay(800);
+        // Mock: always return success for valid email format
+        if (email && email.includes('@')) {
+            return { 
+                success: true, 
+                message: 'Email đặt lại mật khẩu đã được gửi!' 
+            };
+        }
+        return { 
+            success: false, 
+            message: 'Email không hợp lệ' 
+        };
+    },
+
+    /**
      * Lấy thông tin user hiện tại
      */
     async getMe() {
@@ -80,7 +98,7 @@ export const AuthService = {
      */
     logout() {
         ApiService.clearTokens();
-        window.location.hash = '#/login';
+        window.location.pathname = '/login';
     },
 
     /**

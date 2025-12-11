@@ -13,7 +13,7 @@
                 <h4 class="font-semibold text-stone-900 truncate">{{user.name}}</h4>
                 <p class="text-sm text-stone-500">{{user.role}}</p>
             </div>
-            <a href="#/profile" class="p-2 rounded-lg hover:bg-stone-100 text-stone-400 hover:text-stone-600">
+            <a href="/profile" class="p-2 rounded-lg hover:bg-stone-100 text-stone-400 hover:text-stone-600">
                 <i class="fa-solid fa-gear"></i>
             </a>
         </div>
@@ -37,7 +37,7 @@
     
     <!-- Navigation -->
     <nav class="sidebar-nav">
-        <a href="#/dashboard" class="nav-item {{#if (eq currentRoute '/dashboard')}}active{{/if}}" data-nav="/dashboard">
+        <a href="/dashboard" class="nav-item {{#if (eq currentRoute '/dashboard')}}active{{/if}}" data-nav="/dashboard">
             <i class="fa-solid fa-gauge-high w-5"></i>
             <span>Tổng quan</span>
         </a>
@@ -46,25 +46,35 @@
             <span class="text-xs font-semibold text-stone-400 uppercase tracking-wider">Quản lý</span>
         </div>
         
-        <a href="#/bookings" class="nav-item {{#if (eq currentRoute '/bookings')}}active{{/if}}" data-nav="/bookings">
+        <a href="/bookings" class="nav-item {{#if (eq currentRoute '/bookings')}}active{{/if}}" data-nav="/bookings">
             <i class="fa-solid fa-calendar-check w-5"></i>
             <span>Đặt bàn</span>
+            {{#if pendingBookings}}
+            <span class="ml-auto flex items-center gap-1 text-xs font-medium">
+                <span class="bg-yellow-100 text-yellow-700 px-1.5 py-0.5 rounded-full">{{pendingBookings}}</span>
+                {{#if confirmedBookings}}<span class="text-stone-300">|</span>
+                <span class="bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full">{{confirmedBookings}}</span>{{/if}}
+            </span>
+            {{/if}}
         </a>
         
-        <a href="#/tables" class="nav-item {{#if (eq currentRoute '/tables')}}active{{/if}}" data-nav="/tables">
+        <a href="/tables" class="nav-item {{#if (eq currentRoute '/tables')}}active{{/if}}" data-nav="/tables">
             <i class="fa-solid fa-table-cells w-5"></i>
             <span>Quản lý bàn</span>
+            {{#if availableTables}}
+            <span class="ml-auto bg-green-100 text-green-700 text-xs font-medium px-2 py-0.5 rounded-full">{{availableTables}} trống</span>
+            {{/if}}
         </a>
         
         {{#if (or (eq user.role 'OWNER') (eq user.role 'MANAGER'))}}
-        <a href="#/images" class="nav-item {{#if (eq currentRoute '/images')}}active{{/if}}" data-nav="/images">
+        <a href="/images" class="nav-item {{#if (eq currentRoute '/images')}}active{{/if}}" data-nav="/images">
             <i class="fa-solid fa-images w-5"></i>
             <span>Hình ảnh & Menu</span>
         </a>
         {{/if}}
         
         {{#if (or (eq user.role 'OWNER') (eq user.role 'MANAGER'))}}
-        <a href="#/reviews" class="nav-item {{#if (eq currentRoute '/reviews')}}active{{/if}}" data-nav="/reviews">
+        <a href="/reviews" class="nav-item {{#if (eq currentRoute '/reviews')}}active{{/if}}" data-nav="/reviews">
             <i class="fa-solid fa-star w-5"></i>
             <span>Đánh giá</span>
         </a>
@@ -74,7 +84,7 @@
             <span class="text-xs font-semibold text-stone-400 uppercase tracking-wider">Hệ thống</span>
         </div>
         
-        <a href="#/notifications" class="nav-item {{#if (eq currentRoute '/notifications')}}active{{/if}}" data-nav="/notifications">
+        <a href="/notifications" class="nav-item {{#if (eq currentRoute '/notifications')}}active{{/if}}" data-nav="/notifications">
             <i class="fa-solid fa-bell w-5"></i>
             <span>Thông báo</span>
             {{#if unreadCount}}
@@ -83,16 +93,19 @@
         </a>
         
         {{#if (eq user.role 'OWNER')}}
-        <a href="#/restaurant" class="nav-item {{#if (eq currentRoute '/restaurant')}}active{{/if}}" data-nav="/restaurant">
+        <a href="/restaurant" class="nav-item {{#if (eq currentRoute '/restaurant')}}active{{/if}}" data-nav="/restaurant">
             <i class="fa-solid fa-building w-5"></i>
             <span>Thông tin nhà hàng</span>
         </a>
         {{/if}}
         
         {{#if (or (eq user.role 'OWNER') (eq user.role 'MANAGER'))}}
-        <a href="#/accounts" class="nav-item {{#if (eq currentRoute '/accounts')}}active{{/if}}" data-nav="/accounts">
+        <a href="/accounts" class="nav-item {{#if (eq currentRoute '/accounts')}}active{{/if}}" data-nav="/accounts">
             <i class="fa-solid fa-users w-5"></i>
             <span>Nhân sự</span>
+            {{#if pendingStaff}}
+            <span class="ml-auto bg-red-500 text-white text-xs font-medium px-2 py-0.5 rounded-full">{{pendingStaff}}</span>
+            {{/if}}
         </a>
         {{/if}}
         
@@ -100,7 +113,7 @@
             <span class="text-xs font-semibold text-stone-400 uppercase tracking-wider">Tài khoản</span>
         </div>
         
-        <a href="#/profile" class="nav-item {{#if (eq currentRoute '/profile')}}active{{/if}}" data-nav="/profile">
+        <a href="/profile" class="nav-item {{#if (eq currentRoute '/profile')}}active{{/if}}" data-nav="/profile">
             <i class="fa-solid fa-user-gear w-5"></i>
             <span>Cài đặt tài khoản</span>
         </a>

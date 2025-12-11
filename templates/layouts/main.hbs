@@ -14,3 +14,44 @@
         </div>
     </main>
 </div>
+
+<!-- Notification Detail Modal (Global - for header notification clicks) -->
+<div id="notificationDetailModal" class="modal hidden">
+    <div class="modal-backdrop" onclick="closeModal('notificationDetailModal')"></div>
+    <div class="modal-content max-w-lg">
+        <div class="modal-header">
+            <h3 class="modal-title" id="notificationDetailTitle">Chi tiết thông báo</h3>
+            <button class="modal-close" onclick="closeModal('notificationDetailModal')">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div class="modal-body" id="notificationDetailContent">
+            <!-- Dynamic content -->
+        </div>
+        <div class="modal-footer" id="notificationDetailFooter">
+            <!-- Dynamic buttons -->
+        </div>
+    </div>
+</div>
+
+<!-- Logout Confirmation Modal -->
+<div id="logoutModal" class="modal hidden">
+    <div class="modal-backdrop" onclick="closeModal('logoutModal')"></div>
+    <div class="modal-content w-[500px]">
+        <div class="modal-body pt-8 px-6 pb-6 flex flex-col items-center text-center">
+            <div class="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center mb-4 ring-4 ring-red-50">
+                <i class="fa-solid fa-right-from-bracket text-xl text-red-500 pl-0.5"></i>
+            </div>
+            <h3 class="text-lg font-bold text-stone-900 mb-2">Đăng xuất?</h3>
+            <p class="text-stone-500 text-sm leading-relaxed px-2">Bạn có chắc chắn muốn đăng xuất khỏi hệ thống?</p>
+        </div>
+        <div class="modal-footer justify-center gap-2 border-none pt-0 pb-6 px-6">
+            <button class="btn btn-secondary flex-1 justify-center py-2.5 text-sm" onclick="closeModal('logoutModal')">
+                Hủy
+            </button>
+            <button class="btn btn-danger flex-1 justify-center py-2.5 text-sm" id="confirmLogoutBtn">
+                Đăng xuất
+            </button>
+        </div>
+    </div>
+</div>

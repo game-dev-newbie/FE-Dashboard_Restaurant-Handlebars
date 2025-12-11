@@ -12,6 +12,10 @@ export const AccountsService = {
         return MockHandlers.getAccounts();
     },
 
+    async getById(id) {
+        return MockHandlers.getAccountById(id);
+    },
+
     async approve(id) {
         return MockHandlers.approveAccount(id);
     },

@@ -8,6 +8,10 @@ export const ReviewsService = {
         return MockHandlers.getReviews(params);
     },
 
+    async getById(id) {
+        return MockHandlers.getReviewById(id);
+    },
+
     async reply(id, reply) {
         return MockHandlers.replyReview(id, reply);
     },

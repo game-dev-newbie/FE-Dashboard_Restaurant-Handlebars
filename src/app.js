@@ -12,6 +12,9 @@ import { Router } from './router.js';
 import { AuthService } from './services/auth.service.js';
 import { OverviewService } from './services/overview.service.js';
 import { NotificationsService } from './services/notifications.service.js';
+import { BookingsService } from './services/bookings.service.js';
+import { TablesService } from './services/tables.service.js';
+import { AccountsService } from './services/accounts.service.js';
 
 // View imports
 import { AuthView } from './views/auth.view.js';
@@ -106,6 +109,8 @@ const App = {
             'pages/login',
             'pages/register-owner',
             'pages/register-staff',
+            'pages/register-pending',
+            'pages/forgot-password',
             'pages/dashboard',
             'pages/bookings',
             'pages/tables',
@@ -139,6 +144,8 @@ const App = {
         Router.register('/login', () => AuthView.renderLogin(this));
         Router.register('/register-owner', () => AuthView.renderRegisterOwner(this));
         Router.register('/register-staff', () => AuthView.renderRegisterStaff(this));
+        Router.register('/register-pending', () => AuthView.renderRegisterPending(this));
+        Router.register('/forgot-password', () => AuthView.renderForgotPassword(this));
         Router.register('/dashboard', () => this.renderDashboard());
         Router.register('/bookings', () => this.renderBookings());
         Router.register('/tables', () => this.renderTables());
@@ -172,18 +179,46 @@ const App = {
                         sidebarData.kpis = overviewData.kpis;
                     }
                     const notifResult = await NotificationsService.getList();
+                    let notificationsList = [];
                     if (Array.isArray(notifResult)) {
+                        notificationsList = notifResult;
                         sidebarData.unreadCount = notifResult.filter(n => !n.isRead).length;
+                    } else if (notifResult && notifResult.data) {
+                        notificationsList = notifResult.data;
+                        sidebarData.unreadCount = notifResult.data.filter(n => !n.isRead).length;
                     } else if (notifResult && typeof notifResult.unreadCount !== 'undefined') {
                         sidebarData.unreadCount = notifResult.unreadCount;
-                    } else if (notifResult && notifResult.data) {
-                        sidebarData.unreadCount = notifResult.data.filter(n => !n.isRead).length;
                     } else {
                         sidebarData.unreadCount = 0;
                     }
+                    // Pass recent notifications for header dropdown (latest 5)
+                    sidebarData.recentNotifications = notificationsList.slice(0, 5);
+                    
+                    // Fetch booking counts for sidebar badge
+                    try {
+                        const bookingsResult = await BookingsService.getList();
+                        const bookings = bookingsResult.data || [];
+                        sidebarData.pendingBookings = bookings.filter(b => b.status === 'PENDING').length;
+                        sidebarData.confirmedBookings = bookings.filter(b => b.status === 'CONFIRMED').length;
+                    } catch (e) { console.warn('Could not fetch bookings:', e); }
+                    
+                    // Fetch available tables count
+                    try {
+                        const tablesResult = await TablesService.getList();
+                        const tables = tablesResult.data || [];
+                        sidebarData.availableTables = tables.filter(t => t.status === 'ACTIVE').length;
+                    } catch (e) { console.warn('Could not fetch tables:', e); }
+                    
+                    // Fetch pending staff count
+                    try {
+                        const pendingResult = await AccountsService.getPending();
+                        const pending = pendingResult.data || [];
+                        sidebarData.pendingStaff = pending.length;
+                    } catch (e) { console.warn('Could not fetch pending staff:', e); }
                 } catch (e) {
                     console.warn('Could not fetch sidebar data:', e);
                     sidebarData.unreadCount = 0;
+                    sidebarData.recentNotifications = [];
                 }
             }
             
@@ -238,11 +273,21 @@ const App = {
 
     setupEventListeners() {
         document.addEventListener('click', async (e) => {
-            // Handle logout - use closest to capture clicks on child elements (icon/text)
+            // Handle logout - show confirmation modal
             const logoutBtn = e.target.closest('[data-action="logout"]');
             if (logoutBtn) {
                 e.preventDefault();
-                AuthService.logout();
+                window.openModal('logoutModal');
+                // Bind confirm button
+                const confirmBtn = document.getElementById('confirmLogoutBtn');
+                if (confirmBtn) {
+                    const newBtn = confirmBtn.cloneNode(true);
+                    confirmBtn.parentNode.replaceChild(newBtn, confirmBtn);
+                    newBtn.addEventListener('click', () => {
+                        window.closeModal('logoutModal');
+                        AuthService.logout();
+                    });
+                }
             }
 
             // Handle navigation - use closest to capture clicks on child elements
@@ -251,6 +296,25 @@ const App = {
                 e.preventDefault();
                 const path = navBtn.dataset.nav;
                 Router.navigate(path);
+            }
+            
+            // Handle header notification click - show modal like notifications page
+            const headerNotifItem = e.target.closest('[data-action="header-notification-click"]');
+            if (headerNotifItem) {
+                e.preventDefault();
+                const type = headerNotifItem.dataset.type;
+                const notificationId = headerNotifItem.dataset.notificationId;
+                const bookingId = headerNotifItem.dataset.bookingId;
+                const reviewId = headerNotifItem.dataset.reviewId;
+                const accountId = headerNotifItem.dataset.accountId;
+                
+                // Use NotificationsView's modal function
+                await NotificationsView.showNotificationDetailModal(
+                    type,
+                    { notificationId, bookingId, reviewId, accountId },
+                    this,
+                    Router
+                );
             }
         });
     },

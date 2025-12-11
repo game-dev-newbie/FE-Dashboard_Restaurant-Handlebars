@@ -44,7 +44,7 @@ export const AuthService = {
     logout() {
         localStorage.removeItem(CONFIG.STORAGE_KEYS.TOKEN);
         localStorage.removeItem(CONFIG.STORAGE_KEYS.USER);
-        window.location.hash = '#/login';
+        window.location.pathname = '/login';
     },
 
     isAuthenticated() {

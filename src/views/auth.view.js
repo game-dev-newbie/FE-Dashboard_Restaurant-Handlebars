@@ -34,6 +34,73 @@ export const AuthView = {
     },
 
     /**
+     * Render trang Register Pending (chờ duyệt)
+     * @param {Object} App - Reference đến App object
+     */
+    async renderRegisterPending(App) {
+        await App.renderPage('register-pending', {}, false);
+    },
+
+    /**
+     * Render trang Forgot Password (quên mật khẩu)
+     * @param {Object} App - Reference đến App object
+     */
+    async renderForgotPassword(App) {
+        await App.renderPage('forgot-password', {}, false);
+        this.bindForgotPasswordEvents(App);
+    },
+
+    /**
+     * Bind events cho trang Forgot Password
+     */
+    bindForgotPasswordEvents(App) {
+        const form = document.getElementById('forgotPasswordForm');
+        const successDiv = document.getElementById('forgotPasswordSuccess');
+        const resendBtn = document.getElementById('resendEmailBtn');
+
+        if (form) {
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                await this.handleForgotPassword(form, App);
+            });
+        }
+
+        if (resendBtn) {
+            resendBtn.addEventListener('click', async () => {
+                // Reset to form view
+                if (form) form.classList.remove('hidden');
+                if (successDiv) successDiv.classList.add('hidden');
+            });
+        }
+    },
+
+    /**
+     * Xử lý yêu cầu quên mật khẩu
+     */
+    async handleForgotPassword(form, App) {
+        const email = form.querySelector('input[name="email"]').value;
+
+        try {
+            App.showLoading(form.querySelector('button[type="submit"]'));
+            
+            // Call API (mock for now - just show success)
+            const result = await AuthService.forgotPassword(email);
+            
+            if (result.success) {
+                // Hide form, show success
+                form.classList.add('hidden');
+                document.getElementById('forgotPasswordSuccess').classList.remove('hidden');
+            } else {
+                App.showError(result.message || 'Không tìm thấy email này trong hệ thống');
+            }
+        } catch (error) {
+            App.showError('Có lỗi xảy ra. Vui lòng thử lại sau.');
+        } finally {
+            App.hideLoading(form.querySelector('button[type="submit"]'));
+        }
+    },
+
+    /**
      * Bind events cho trang Login
      */
     bindLoginEvents(App) {
@@ -147,7 +214,7 @@ export const AuthView = {
                 if (rememberMe) {
                     localStorage.setItem(CONFIG.STORAGE_KEYS.REMEMBER_ME, 'true');
                 }
-                window.location.hash = '#/dashboard';
+                window.location.pathname = '/dashboard';
             } else {
                 App.showError('Email hoặc mật khẩu không đúng');
             }
@@ -177,9 +244,9 @@ export const AuthView = {
             if (result.success) {
                 App.showSuccess(result.message || 'Đăng ký thành công!');
                 if (result.token) {
-                    setTimeout(() => { window.location.hash = '#/dashboard'; }, 1500);
+                    setTimeout(() => { window.location.pathname = '/dashboard'; }, 1500);
                 } else {
-                    setTimeout(() => { window.location.hash = '#/login'; }, 2000);
+                    setTimeout(() => { window.location.pathname = '/login'; }, 2000);
                 }
             }
         } catch (error) {
@@ -206,7 +273,8 @@ export const AuthView = {
             const result = await AuthService.registerStaff(data);
             
             if (result.success) {
-                App.showSuccess(result.message || 'Đã gửi yêu cầu, vui lòng chờ quản lý duyệt.');
+                // Navigate to pending page instead of just showing toast
+                window.location.pathname = '/register-pending';
             }
         } catch (error) {
             App.showError('Đăng ký thất bại. Vui lòng thử lại.');

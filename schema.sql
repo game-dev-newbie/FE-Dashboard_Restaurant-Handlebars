@@ -45,6 +45,8 @@ CREATE TABLE `restaurants` (
   `average_rating` float DEFAULT 0,
   `review_count` int DEFAULT 0,
   `invite_code` varchar(255) UNIQUE,
+  `favorite_count` int DEFAULT 0,
+  `main_image_url` varchar(255),
   `open_time` time,
   `close_time` time,
   `created_at` datetime,

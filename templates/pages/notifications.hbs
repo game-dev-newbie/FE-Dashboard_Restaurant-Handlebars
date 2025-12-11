@@ -32,7 +32,8 @@
 <div class="card overflow-hidden">
     {{#each data}}
     <div class="notification-item flex items-start gap-4 p-4 border-b border-stone-100 hover:bg-stone-50 cursor-pointer transition-colors {{#unless isRead}}bg-primary-50/50{{/unless}} animate-fade-in"
-         data-action="notification-click" data-notification-id="{{id}}" data-type="{{type}}" data-booking-id="{{bookingId}}"
+         data-action="notification-click" data-notification-id="{{id}}" data-type="{{type}}" 
+         data-booking-id="{{bookingId}}" data-review-id="{{reviewId}}" data-account-id="{{accountId}}"
          style="animation-delay: {{@index}}0ms">
         
         <!-- Icon -->
@@ -76,4 +77,25 @@
         <p class="text-stone-500">Không có thông báo nào</p>
     </div>
     {{/each}}
+</div>
+
+<!-- Notification Detail Modal -->
+<div id="notificationDetailModal" class="hidden">
+    <div class="modal-backdrop" onclick="closeModal('notificationDetailModal')"></div>
+    <div class="modal max-w-lg">
+        <div class="modal-header">
+            <h5 class="modal-title" id="notificationModalTitle">Chi tiết thông báo</h5>
+            <button class="modal-close" onclick="closeModal('notificationDetailModal')">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div class="modal-body" id="notificationDetailContent">
+            <div class="text-center py-4">
+                <i class="fa-solid fa-spinner fa-spin text-2xl text-stone-400"></i>
+            </div>
+        </div>
+        <div class="modal-footer" id="notificationDetailFooter">
+            <button class="btn btn-secondary" onclick="closeModal('notificationDetailModal')">Đóng</button>
+        </div>
+    </div>
 </div>

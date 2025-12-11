@@ -57,7 +57,7 @@ export const AuthService = {
      */
     logout() {
         ApiService.clearTokens();
-        window.location.hash = '#/login';
+        window.location.pathname = '/login';
     },
 
     /**

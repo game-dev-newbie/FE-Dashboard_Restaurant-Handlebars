@@ -37,7 +37,7 @@ export const CONFIG = {
   },
 
   // Các route công khai (không cần đăng nhập)
-  PUBLIC_ROUTES: ["/login", "/register-owner", "/register-staff", "/"],
+  PUBLIC_ROUTES: ["/login", "/register-owner", "/register-staff", "/register-pending", "/forgot-password", "/"],
 
   // Trạng thái đặt bàn
   BOOKING_STATUS: {

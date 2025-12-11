@@ -58,6 +58,15 @@ export const ReviewsView = {
                 await this.handleReply(reviewId, reply, App);
             });
         });
+
+        // Cancel reply button handlers
+        document.querySelectorAll('[data-action="cancelReply"]').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const reviewId = btn.dataset.id;
+                this.hideReplyForm(reviewId);
+            });
+        });
     },
 
     async handleToggleVisibility(reviewId, visible, App) {
@@ -77,8 +86,16 @@ export const ReviewsView = {
     showReplyForm(reviewId) {
         const form = document.querySelector(`.reply-form[data-review-id="${reviewId}"]`);
         if (form) {
-            form.style.display = form.style.display === 'none' ? 'block' : 'none';
+            form.classList.remove('hidden');
             form.querySelector('textarea')?.focus();
+        }
+    },
+
+    hideReplyForm(reviewId) {
+        const form = document.querySelector(`.reply-form[data-review-id="${reviewId}"]`);
+        if (form) {
+            form.classList.add('hidden');
+            form.querySelector('textarea').value = '';
         }
     },
 
