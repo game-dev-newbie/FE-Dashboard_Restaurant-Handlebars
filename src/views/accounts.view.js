@@ -53,22 +53,25 @@ export const AccountsView = {
         
         document.querySelectorAll('[data-action="approve-account"]').forEach(btn => {
             btn.addEventListener('click', async (e) => {
-                const accountId = e.target.dataset.accountId;
+                const button = e.target.closest('[data-action="approve-account"]');
+                const accountId = button.dataset.accountId;
                 await this.handleApprove(accountId, App);
             });
         });
 
         document.querySelectorAll('[data-action="reject-account"]').forEach(btn => {
             btn.addEventListener('click', async (e) => {
-                const accountId = e.target.dataset.accountId;
+                const button = e.target.closest('[data-action="reject-account"]');
+                const accountId = button.dataset.accountId;
                 await this.handleReject(accountId, App);
             });
         });
 
         document.querySelectorAll('[data-action="toggle-account"]').forEach(btn => {
             btn.addEventListener('click', async (e) => {
-                const accountId = e.target.dataset.accountId;
-                const currentStatus = e.target.dataset.currentStatus;
+                const button = e.target.closest('[data-action="toggle-account"]');
+                const accountId = button.dataset.accountId;
+                const currentStatus = button.dataset.currentStatus;
                 await this.handleToggle(accountId, currentStatus, App);
             });
         });
