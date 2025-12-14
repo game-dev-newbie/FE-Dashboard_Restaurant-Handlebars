@@ -629,7 +629,15 @@ export const MockHandlers = {
         await this.delay();
         const account = _currentUser || MOCK_DATA.restaurantAccounts[0];
         if (data.name) account.full_name = data.name;
-        return { success: true, message: 'Đã cập nhật thông tin' };
+        return { 
+            success: true, 
+            message: 'Đã cập nhật thông tin',
+            data: {
+                name: account.full_name,
+                email: account.email,
+                avatar: account.avatar_url
+            }
+        };
     },
 
     async uploadAvatar(file) {

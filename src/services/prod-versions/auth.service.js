@@ -46,6 +46,13 @@ export const AuthService = {
     },
 
     /**
+     * Yêu cầu đặt lại mật khẩu
+     */
+    async forgotPassword(email) {
+        return ApiService.post('/auth/forgot-password', { email });
+    },
+
+    /**
      * Lấy thông tin user hiện tại
      */
     async getMe() {

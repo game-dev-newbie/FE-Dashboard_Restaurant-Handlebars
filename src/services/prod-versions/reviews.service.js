@@ -9,6 +9,10 @@ export const ReviewsService = {
         return ApiService.get(`/reviews${query ? '?' + query : ''}`);
     },
 
+    async getById(id) {
+        return ApiService.get(`/reviews/${id}`);
+    },
+
     async reply(id, reply) {
         return ApiService.post(`/reviews/${id}/reply`, { reply });
     },

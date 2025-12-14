@@ -29,9 +29,9 @@ export const ProfileView = {
             });
         }
 
-        const avatarInput = document.getElementById('avatarInput');
-        if (avatarInput) {
-            avatarInput.addEventListener('change', async (e) => {
+        const avatarUpload = document.getElementById('avatarUpload');
+        if (avatarUpload) {
+            avatarUpload.addEventListener('change', async (e) => {
                 await this.handleUploadAvatar(e.target.files[0], App);
             });
         }
@@ -106,9 +106,9 @@ export const ProfileView = {
             const result = await ProfileService.uploadAvatar(formData);
             if (result.success) {
                 App.showSuccess('Cập nhật ảnh đại diện thành công!');
-                const avatarImg = document.getElementById('profileAvatar');
+                const avatarImg = document.getElementById('avatarPreview');
                 if (avatarImg) {
-                    avatarImg.src = result.data.avatarUrl;
+                    avatarImg.src = result.avatarUrl || result.data?.avatarUrl;
                 }
                 AuthService.updateStoredUser({ avatar: result.data.avatarUrl });
             }
