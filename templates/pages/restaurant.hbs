@@ -98,7 +98,7 @@
             </div>
             
             <div class="flex gap-3">
-                <button type="submit" class="btn btn-primary">
+                <button type="button" class="btn btn-primary" id="showConfirmUpdateBtn">
                     <i class="fa-solid fa-check"></i>
                     Lưu thay đổi
                 </button>
@@ -151,4 +151,36 @@
     </div>
 </div>
 
+<!-- Confirm Update Modal -->
+<div id="confirmUpdateModal" class="hidden">
+    <div class="modal-backdrop" onclick="closeModal('confirmUpdateModal')"></div>
+    <div class="modal">
+        <div class="modal-header">
+            <h5 class="modal-title">Xác nhận cập nhật</h5>
+            <button class="modal-close" onclick="closeModal('confirmUpdateModal')">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0">
+                    <i class="fa-solid fa-triangle-exclamation text-amber-600 text-xl"></i>
+                </div>
+                <div>
+                    <p class="text-stone-900 font-medium">Bạn có chắc muốn cập nhật thông tin nhà hàng?</p>
+                    <p class="text-sm text-stone-500 mt-1">
+                        Thông tin mới sẽ được hiển thị ngay cho khách hàng trên ứng dụng.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal('confirmUpdateModal')">Huỷ</button>
+            <button class="btn btn-primary" id="confirmUpdateBtn">
+                <i class="fa-solid fa-check"></i>
+                Xác nhận cập nhật
+            </button>
+        </div>
+    </div>
+</div>
 

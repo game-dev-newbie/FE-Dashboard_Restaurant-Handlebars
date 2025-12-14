@@ -342,6 +342,10 @@ const App = {
         this.showToast(message, 'success');
     },
 
+    showWarning(message) {
+        this.showToast(message, 'warning');
+    },
+
     showToast(message, type = 'info') {
         let toastContainer = document.getElementById('toastContainer');
         if (!toastContainer) {

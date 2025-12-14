@@ -10,5 +10,9 @@ export const RestaurantService = {
 
     async update(data) {
         return MockHandlers.updateRestaurant(data);
+    },
+
+    async updateHours(hours) {
+        return MockHandlers.updateRestaurantHours(hours);
     }
 };

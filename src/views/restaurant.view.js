@@ -26,9 +26,26 @@ export const RestaurantView = {
         };
         
         const infoForm = document.getElementById('restaurantInfoForm');
-        if (infoForm) {
-            infoForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
+        const showConfirmBtn = document.getElementById('showConfirmUpdateBtn');
+        const confirmUpdateBtn = document.getElementById('confirmUpdateBtn');
+        
+        // Show confirmation modal when "Lưu thay đổi" is clicked
+        if (showConfirmBtn) {
+            showConfirmBtn.addEventListener('click', () => {
+                // Validate form first
+                if (infoForm && infoForm.checkValidity()) {
+                    window.openModal('confirmUpdateModal');
+                } else if (infoForm) {
+                    // Trigger browser's native validation
+                    infoForm.reportValidity();
+                }
+            });
+        }
+        
+        // Handle confirmed update
+        if (confirmUpdateBtn && infoForm) {
+            confirmUpdateBtn.addEventListener('click', async () => {
+                window.closeModal('confirmUpdateModal');
                 await this.handleUpdateInfo(infoForm, App);
             });
         }
@@ -38,6 +55,41 @@ export const RestaurantView = {
             hoursForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 await this.handleUpdateHours(hoursForm, App);
+            });
+        }
+
+        // Tag input handling - add new tag on Enter
+        const tagInput = document.getElementById('tagInput');
+        const tagsContainer = document.getElementById('tagsContainer');
+        if (tagInput && tagsContainer) {
+            tagInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const tagValue = tagInput.value.trim();
+                    if (tagValue) {
+                        // Check if tag already exists
+                        const existingTags = Array.from(tagsContainer.querySelectorAll('span')).map(s => 
+                            s.textContent.trim().replace('×', '').trim().toLowerCase()
+                        );
+                        if (!existingTags.includes(tagValue.toLowerCase())) {
+                            // Create new tag element
+                            const tagSpan = document.createElement('span');
+                            tagSpan.className = 'inline-flex items-center gap-1 px-3 py-1 bg-primary-100 text-primary-700 rounded-full text-sm';
+                            tagSpan.innerHTML = `
+                                ${tagValue}
+                                <button type="button" class="hover:text-primary-900" onclick="removeTag(this)">
+                                    ×
+                                </button>
+                            `;
+                            tagsContainer.appendChild(tagSpan);
+                            window.updateTagsValue();
+                            tagInput.value = '';
+                        } else {
+                            App.showWarning('Tag này đã tồn tại!');
+                            tagInput.value = '';
+                        }
+                    }
+                }
             });
         }
     },

@@ -10,5 +10,13 @@ export const RestaurantService = {
 
     async update(data) {
         return ApiService.patch('/restaurant', data);
+    },
+
+    async updateHours(hours) {
+        return ApiService.patch('/restaurant/hours', { hours });
+    },
+
+    async updateTags(tags) {
+        return ApiService.patch('/restaurant/tags', { tags });
     }
 };

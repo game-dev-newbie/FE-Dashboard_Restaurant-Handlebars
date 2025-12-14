@@ -497,9 +497,18 @@ export const MockHandlers = {
             name: data.name || restaurant.name,
             address: data.address || restaurant.address,
             phone: data.phone || restaurant.phone,
-            description: data.description || restaurant.description
+            description: data.description || restaurant.description,
+            tags: data.tags || restaurant.tags,
+            require_deposit: data.requireDeposit !== undefined ? data.requireDeposit === 'on' : restaurant.require_deposit,
+            default_deposit_amount: data.defaultDeposit ? parseInt(data.defaultDeposit) : restaurant.default_deposit_amount
         });
         return { success: true, message: 'Đã cập nhật thông tin nhà hàng' };
+    },
+
+    async updateRestaurantHours(hours) {
+        await this.delay();
+        // In a real implementation, this would update operating hours in the database
+        return { success: true, message: 'Đã cập nhật giờ mở cửa' };
     },
 
     // ==================== ACCOUNTS ====================
