@@ -573,16 +573,19 @@ export const MockHandlers = {
             phone: r.phone,
             description: r.description,
             tags: tags,
-            requireDeposit: r.require_deposit,
-            defaultDeposit: r.default_deposit_amount,
-            averageRating: r.average_rating,
-            reviewCount: r.review_count
+            require_deposit: r.require_deposit,
+            default_deposit_amount: r.default_deposit_amount,
+            average_rating: r.average_rating,
+            review_count: r.review_count
         };
     },
 
     async updateRestaurant(data) {
+        console.log('Mock Update Received:', data);
         await this.delay();
         const restaurant = MOCK_DATA.restaurants[0];
+        const oldState = { ...restaurant };
+        
         Object.assign(restaurant, {
             name: data.name || restaurant.name,
             address: data.address || restaurant.address,
@@ -592,6 +595,9 @@ export const MockHandlers = {
             require_deposit: data.require_deposit !== undefined ? data.require_deposit : restaurant.require_deposit,
             default_deposit_amount: data.default_deposit_amount !== undefined ? parseInt(data.default_deposit_amount) : restaurant.default_deposit_amount
         });
+        
+        console.log('Mock Update Result:', { old: oldState.require_deposit, new: restaurant.require_deposit });
+        
         // Persist to localStorage
         MOCK_DATA.saveRestaurants();
         return { success: true, message: 'Đã cập nhật thông tin nhà hàng' };

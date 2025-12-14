@@ -3,6 +3,7 @@
  * Xử lý logic render và sự kiện cho trang Thông tin nhà hàng
  */
 import { RestaurantService } from '../services/restaurant.service.js';
+import { DepositService } from '../services/deposit.service.js';
 
 export const RestaurantView = {
     async render(App) {
@@ -14,10 +15,10 @@ export const RestaurantView = {
         
         // Normalize fields for template
         if (finalData) {
-            finalData.requireDeposit = finalData.require_deposit;
-            finalData.defaultDeposit = finalData.default_deposit_amount;
-            finalData.averageRating = finalData.average_rating;
-            finalData.reviewCount = finalData.review_count;
+            finalData.requireDeposit = finalData.require_deposit ?? finalData.requireDeposit;
+            finalData.defaultDeposit = finalData.default_deposit_amount ?? finalData.defaultDeposit;
+            finalData.averageRating = finalData.average_rating ?? finalData.averageRating;
+            finalData.reviewCount = finalData.review_count ?? finalData.reviewCount;
         }
 
         await App.renderPage('restaurant', finalData, true);
@@ -111,22 +112,30 @@ export const RestaurantView = {
         const formData = new FormData(form);
         const data = Object.fromEntries(formData.entries());
         
-        // Explicitly handle checkbox (unchecked checkboxes don't appear in FormData)
+        // Separate deposit fields
         const requireDepositCheckbox = form.querySelector('#requireDeposit');
-        data.require_deposit = requireDepositCheckbox ? requireDepositCheckbox.checked : false;
-        data.default_deposit_amount = data.defaultDeposit || 0;
-        
-        // Clean up field names for backend
+        const depositPayload = {
+            requireDeposit: requireDepositCheckbox ? requireDepositCheckbox.checked : false,
+            defaultDepositAmount: data.defaultDeposit ? parseInt(data.defaultDeposit, 10) : 0,
+        };
+        // Remove deposit fields from general data
         delete data.requireDeposit;
         delete data.defaultDeposit;
         
         try {
             App.showLoading(form.querySelector('button[type="submit"]'));
+            // Update general restaurant info
             const result = await RestaurantService.update(data);
-            if (result.success) {
+            // Update deposit settings separately
+            const depositResult = await DepositService.updateSettings(depositPayload);
+
+            if (result.success && depositResult.success) {
                 App.showSuccess('Cập nhật thông tin nhà hàng thành công!');
+            } else {
+                App.showError('Cập nhật một số trường thất bại.');
             }
         } catch (error) {
+            console.error('Update Error:', error);
             App.showError('Cập nhật thất bại. Vui lòng thử lại.');
         } finally {
             App.hideLoading(form.querySelector('button[type="submit"]'));
