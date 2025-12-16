@@ -2,8 +2,9 @@
  * Mock Data - Dữ liệu giả lập theo cấu trúc schema.sql
  * 
  * TEST ACCOUNTS:
- * - admin@restaurant.com / 123456 (OWNER)
- * - staff@restaurant.com / 123456 (STAFF)
+ * - admin@gmail.com / 123456 (OWNER)
+ * - staff1@gmail.com / 123456 (STAFF)
+ * - staff2@gmail.com / 123456 (STAFF - INVITED)
  * 
  * NOTE: Dữ liệu được lưu vào localStorage để persist qua các lần reload
  */
@@ -117,8 +118,8 @@ const _restaurantAccounts = [
     {
         id: 1,
         restaurant_id: 1,
-        full_name: 'Nguyễn Văn An',
-        email: 'admin@restaurant.com',
+        full_name: 'Nguyễn Văn Chủ',
+        email: 'admin@gmail.com',
         password: '123456',
         role: 'OWNER',
         status: 'ACTIVE',

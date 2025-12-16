@@ -34,10 +34,22 @@
             </div>
         </div>
         <div class="mt-3 flex items-center text-sm">
+            {{#if (gt kpis.bookingsTrend 0)}}
             <span class="text-green-600 flex items-center gap-1">
                 <i class="fa-solid fa-arrow-trend-up"></i>
-                +12%
+                +{{kpis.bookingsTrend}}%
             </span>
+            {{else if (lt kpis.bookingsTrend 0)}}
+            <span class="text-red-600 flex items-center gap-1">
+                <i class="fa-solid fa-arrow-trend-down"></i>
+                {{kpis.bookingsTrend}}%
+            </span>
+            {{else}}
+            <span class="text-stone-400 flex items-center gap-1">
+                <i class="fa-solid fa-minus"></i>
+                0%
+            </span>
+            {{/if}}
             <span class="text-stone-400 ml-2">so với hôm qua</span>
         </div>
     </div>
@@ -54,10 +66,22 @@
             </div>
         </div>
         <div class="mt-3 flex items-center text-sm">
+            {{#if (gt kpis.guestsTrend 0)}}
             <span class="text-green-600 flex items-center gap-1">
                 <i class="fa-solid fa-arrow-trend-up"></i>
-                +8%
+                +{{kpis.guestsTrend}}%
             </span>
+            {{else if (lt kpis.guestsTrend 0)}}
+            <span class="text-red-600 flex items-center gap-1">
+                <i class="fa-solid fa-arrow-trend-down"></i>
+                {{kpis.guestsTrend}}%
+            </span>
+            {{else}}
+            <span class="text-stone-400 flex items-center gap-1">
+                <i class="fa-solid fa-minus"></i>
+                0%
+            </span>
+            {{/if}}
             <span class="text-stone-400 ml-2">so với hôm qua</span>
         </div>
     </div>
@@ -74,10 +98,17 @@
             </div>
         </div>
         <div class="mt-3 text-sm text-orange-600">
+            {{#if (gt kpis.pendingBookings 0)}}
             <span class="flex items-center gap-1">
                 <i class="fa-solid fa-circle-exclamation"></i>
                 Cần xử lý
             </span>
+            {{else}}
+            <span class="flex items-center gap-1 text-green-600">
+                <i class="fa-solid fa-check-circle"></i>
+                Đã xử lý hết
+            </span>
+            {{/if}}
         </div>
     </div>
     

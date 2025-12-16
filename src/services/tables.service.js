@@ -6,14 +6,15 @@ import { CONFIG } from '../config.js';
 import { MockHandlers } from '../mock/handlers.js';
 
 export const TablesService = {
-    async getList() {
-        if (CONFIG.USE_MOCK) return MockHandlers.getTables();
+    async getList(params = {}) {
+        if (CONFIG.USE_MOCK) return MockHandlers.getTables(params);
         try {
-            const response = await ApiService.get('/tables');
+            const query = new URLSearchParams(params).toString();
+            const response = await ApiService.get(`/tables${query ? '?' + query : ''}`);
             return { data: response.data || response, success: true };
         } catch (error) {
             console.warn('Backend unavailable, using Mock Tables');
-            return MockHandlers.getTables();
+            return MockHandlers.getTables(params);
         }
     },
 

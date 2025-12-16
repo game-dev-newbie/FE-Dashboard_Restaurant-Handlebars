@@ -53,14 +53,30 @@ export const BookingDetailModal = {
         window.openModal('bookingDetailModal');
         
         try {
-            const booking = await BookingsService.getById(bookingId);
-            if (booking) {
+            const rawBooking = await BookingsService.getById(bookingId);
+            
+            // Map data from Backend Response (snake_case) or potential Mock (camelCase)
+            if (rawBooking) {
+                const booking = {
+                    ...rawBooking,
+                    code: rawBooking.code || `B${rawBooking.id}`,
+                    customerName: rawBooking.customer_name || rawBooking.customerName || (rawBooking.user ? rawBooking.user.display_name : 'Khách vãng lai'),
+                    customerPhone: rawBooking.phone || rawBooking.customerPhone || (rawBooking.user ? rawBooking.user.phone : ''),
+                    guests: rawBooking.people_count || rawBooking.guests || 0,
+                    datetime: rawBooking.booking_time || rawBooking.datetime,
+                    tableName: rawBooking.table ? rawBooking.table.name : (rawBooking.tableName || 'Chưa gán'),
+                    status: rawBooking.status,
+                    deposit: rawBooking.deposit_amount || rawBooking.deposit || 0,
+                    notes: rawBooking.note || rawBooking.notes // Backend uses 'note'
+                };
+
                 const statusMap = {
                     'PENDING': { label: 'Chờ xác nhận', class: 'badge-pending' },
                     'CONFIRMED': { label: 'Đã xác nhận', class: 'badge-confirmed' },
                     'CHECKED_IN': { label: 'Đã check-in', class: 'badge-checked-in' },
                     'CANCELLED': { label: 'Đã hủy', class: 'badge-cancelled' },
-                    'NO_SHOW': { label: 'Không đến', class: 'badge-no-show' }
+                    'NO_SHOW': { label: 'Không đến', class: 'badge-no-show' },
+                    'COMPLETED': { label: 'Hoàn tất', class: 'badge-confirmed' }
                 };
                 const status = statusMap[booking.status] || { label: booking.status, class: 'badge-no-show' };
                 
@@ -68,7 +84,7 @@ export const BookingDetailModal = {
                     <div class="space-y-4">
                         <!-- Booking Code -->
                         <div class="flex items-center justify-between">
-                            <code class="bg-stone-100 px-3 py-1.5 rounded text-sm font-mono font-semibold">${booking.code || 'N/A'}</code>
+                            <code class="bg-stone-100 px-3 py-1.5 rounded text-sm font-mono font-semibold">${booking.code}</code>
                             <span class="badge ${status.class}">${status.label}</span>
                         </div>
                         
@@ -81,11 +97,11 @@ export const BookingDetailModal = {
                             <div class="grid grid-cols-2 gap-3 text-sm">
                                 <div>
                                     <span class="text-stone-500">Họ tên:</span>
-                                    <p class="font-medium text-stone-900">${booking.customerName || 'N/A'}</p>
+                                    <p class="font-medium text-stone-900">${booking.customerName}</p>
                                 </div>
                                 <div>
                                     <span class="text-stone-500">Số điện thoại:</span>
-                                    <p class="font-medium text-stone-900">${booking.customerPhone || 'N/A'}</p>
+                                    <p class="font-medium text-stone-900">${booking.customerPhone || '---'}</p>
                                 </div>
                             </div>
                         </div>
@@ -103,11 +119,11 @@ export const BookingDetailModal = {
                                 </div>
                                 <div>
                                     <span class="text-stone-500">Số khách:</span>
-                                    <p class="font-medium text-stone-900">${booking.guests || 'N/A'} người</p>
+                                    <p class="font-medium text-stone-900">${booking.guests} người</p>
                                 </div>
                                 <div>
                                     <span class="text-stone-500">Bàn:</span>
-                                    <p class="font-medium text-stone-900">${booking.tableName || 'Chưa gán'}</p>
+                                    <p class="font-medium text-stone-900">${booking.tableName}</p>
                                 </div>
                                 <div>
                                     <span class="text-stone-500">Tiền cọc:</span>

@@ -11,9 +11,24 @@ export const NotificationsView = {
     async render(App, Router) {
         const params = Router.getQueryParams();
         const result = await NotificationsService.getList(params);
+        
+        // Backend returns: { data: { items: [...], pagination: {...} } }
         const notifData = result.data || {};
-        const notifications = Array.isArray(notifData) ? notifData : (notifData.items || []);
+        const rawNotifications = notifData.items || (Array.isArray(notifData) ? notifData : []);
         const pagination = notifData.pagination || {};
+
+        // Map backend fields to template-expected fields
+        const notifications = rawNotifications.map(n => ({
+            id: n.id,
+            type: n.type,
+            title: n.title,
+            content: n.message || n.content || '',
+            isRead: n.is_read ?? n.isRead ?? false,
+            createdAt: n.created_at || n.createdAt,
+            bookingId: n.booking_id || n.bookingId,
+            reviewId: n.review_id || n.reviewId,
+            accountId: n.account_id || n.accountId
+        }));
 
         await App.renderPage('notifications', { data: notifications, pagination }, true);
 
@@ -312,11 +327,17 @@ export const NotificationsView = {
      * Show notification detail modal with type-specific content
      */
     async showNotificationDetailModal(type, data, App, Router) {
+        // Create modal dynamically if it doesn't exist (for non-notification pages)
+        this.ensureNotificationModal();
+        
         const titleEl = document.getElementById('notificationModalTitle');
         const contentEl = document.getElementById('notificationDetailContent');
         const footerEl = document.getElementById('notificationDetailFooter');
         
-        if (!contentEl) return;
+        if (!contentEl) {
+            console.error('Could not create notification modal');
+            return;
+        }
         
         // Set loading state
         contentEl.innerHTML = `<div class="text-center py-4"><i class="fa-solid fa-spinner fa-spin text-2xl text-stone-400"></i></div>`;
@@ -325,25 +346,26 @@ export const NotificationsView = {
         try {
             switch (type) {
                 case 'BOOKING_CREATED':
-                case 'BOOKING_UPDATED': // Handle update
+                case 'BOOKING_UPDATED':
                 case 'BOOKING_CONFIRMED':
                 case 'BOOKING_CANCELLED':
                 case 'BOOKING_CHECKED_IN':
                 case 'BOOKING_NO_SHOW':
                 case 'BOOKING_PAYMENT_SUCCESS':
                 case 'BOOKING_REFUND_SUCCESS':
-                    titleEl.textContent = 'Chi tiết đặt bàn';
+                case 'BOOKING_COMPLETED':
+                    if (titleEl) titleEl.textContent = 'Chi tiết đặt bàn';
                     await this.renderBookingDetailContent(data.bookingId, contentEl, footerEl, App, Router);
                     break;
                     
                 case 'REVIEW_CREATED':
-                    titleEl.textContent = 'Chi tiết đánh giá';
+                    if (titleEl) titleEl.textContent = 'Chi tiết đánh giá';
                     await this.renderReviewDetailContent(data.reviewId, contentEl, footerEl, App);
                     break;
                     
-                case 'STAFF_REGISTERED': // Replaces MEMBER_PENDING properly
+                case 'STAFF_REGISTERED':
                 case 'STAFF_STATUS_CHANGED':
-                    titleEl.textContent = 'Thông tin nhân viên';
+                    if (titleEl) titleEl.textContent = 'Thông tin nhân viên';
                     await this.renderMemberApprovalContent(data.accountId, contentEl, footerEl, App);
                     break;
                     
@@ -354,30 +376,72 @@ export const NotificationsView = {
         } catch (error) {
             console.error('Error loading notification detail:', error);
             contentEl.innerHTML = `<div class="text-center py-4 text-red-500"><i class="fa-solid fa-circle-exclamation text-2xl mb-2"></i><p>Lỗi khi tải thông tin</p></div>`;
+            footerEl.innerHTML = `<button class="btn btn-secondary" onclick="closeModal('notificationDetailModal')">Đóng</button>`;
         }
     },
 
     /**
-     * Render booking detail content with action buttons
+     * Ensure notification modal exists, create if not
      */
-    async renderBookingDetailContent(bookingId, contentEl, footerEl, App, Router) {
-        if (!bookingId) {
+    ensureNotificationModal() {
+        if (document.getElementById('notificationDetailModal')) return;
+        
+        const modalHtml = `
+            <div id="notificationDetailModal" class="hidden fixed inset-0 z-50 flex items-center justify-center">
+                <div class="modal-backdrop absolute inset-0 bg-black/50" onclick="closeModal('notificationDetailModal')"></div>
+                <div class="modal relative bg-white rounded-xl shadow-2xl" style="width: 500px; max-width: 90vw;">
+                    <div class="modal-header flex items-center justify-between p-4 border-b border-stone-200">
+                        <h3 id="notificationModalTitle" class="modal-title font-semibold text-lg">Chi tiết thông báo</h3>
+                        <button type="button" class="modal-close w-8 h-8 flex items-center justify-center rounded-lg hover:bg-stone-100 transition-colors" onclick="closeModal('notificationDetailModal')">
+                            <i class="fa-solid fa-xmark text-stone-500"></i>
+                        </button>
+                    </div>
+                    <div class="modal-body p-4" id="notificationDetailContent">
+                        <!-- Content injected here -->
+                    </div>
+                    <div class="modal-footer flex justify-end gap-2 p-4 border-t border-stone-200" id="notificationDetailFooter">
+                        <button class="btn btn-secondary" onclick="closeModal('notificationDetailModal')">Đóng</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+    },
+
+    /**
+ * Render booking detail content with action buttons
+ */
+async renderBookingDetailContent(bookingId, contentEl, footerEl, App, Router) {
+    if (!bookingId) {
+        contentEl.innerHTML = `<p class="text-stone-500">Không tìm thấy thông tin đặt bàn</p>`;
+        footerEl.innerHTML = `<button class="btn btn-secondary" onclick="closeModal('notificationDetailModal')">Đóng</button>
+                              <button class="btn btn-primary" onclick="window.location.pathname='/bookings'">Xem danh sách</button>`;
+        return;
+    }
+    
+    try {
+        const booking = await BookingsService.getById(bookingId);
+        if (!booking) {
             contentEl.innerHTML = `<p class="text-stone-500">Không tìm thấy thông tin đặt bàn</p>`;
             footerEl.innerHTML = `<button class="btn btn-secondary" onclick="closeModal('notificationDetailModal')">Đóng</button>
                                   <button class="btn btn-primary" onclick="window.location.pathname='/bookings'">Xem danh sách</button>`;
             return;
         }
         
-        const booking = await BookingsService.getById(bookingId);
-        if (!booking) {
-            contentEl.innerHTML = `<p class="text-stone-500">Không tìm thấy thông tin đặt bàn</p>`;
-            return;
-        }
+        // Map API fields (snake_case) to display
+        const customerName = booking.customer_name || booking.customerName || (booking.user?.display_name) || 'N/A';
+        const customerPhone = booking.phone || booking.customerPhone || (booking.user?.phone) || 'N/A';
+        const guestCount = booking.people_count || booking.guests || 'N/A';
+        const bookingTime = booking.booking_time || booking.datetime;
+        const tableName = booking.table?.name || booking.tableName || 'Chưa gán';
+        const notes = booking.note || booking.notes || '';
+        const code = booking.code || `BK${String(booking.id).padStart(3, '0')}`;
         
         const statusMap = {
             'PENDING': { label: 'Chờ xác nhận', class: 'badge-pending' },
             'CONFIRMED': { label: 'Đã xác nhận', class: 'badge-confirmed' },
             'CHECKED_IN': { label: 'Đã check-in', class: 'badge-checked-in' },
+            'COMPLETED': { label: 'Hoàn thành', class: 'badge-confirmed' },
             'CANCELLED': { label: 'Đã hủy', class: 'badge-cancelled' },
             'NO_SHOW': { label: 'Không đến', class: 'badge-no-show' }
         };
@@ -386,7 +450,7 @@ export const NotificationsView = {
         contentEl.innerHTML = `
             <div class="space-y-4">
                 <div class="flex items-center justify-between">
-                    <code class="bg-stone-100 px-3 py-1.5 rounded text-sm font-mono font-semibold">${booking.code || 'N/A'}</code>
+                    <code class="bg-stone-100 px-3 py-1.5 rounded text-sm font-mono font-semibold">${code}</code>
                     <span class="badge ${status.class}">${status.label}</span>
                 </div>
                 <div class="bg-stone-50 rounded-lg p-4">
@@ -394,8 +458,8 @@ export const NotificationsView = {
                         <i class="fa-solid fa-user"></i> Thông tin khách hàng
                     </h4>
                     <div class="grid grid-cols-2 gap-3 text-sm">
-                        <div><span class="text-stone-500">Họ tên:</span><p class="font-medium text-stone-900">${booking.customerName || 'N/A'}</p></div>
-                        <div><span class="text-stone-500">Số điện thoại:</span><p class="font-medium text-stone-900">${booking.customerPhone || 'N/A'}</p></div>
+                        <div><span class="text-stone-500">Họ tên:</span><p class="font-medium text-stone-900">${customerName}</p></div>
+                        <div><span class="text-stone-500">Số điện thoại:</span><p class="font-medium text-stone-900">${customerPhone}</p></div>
                     </div>
                 </div>
                 <div class="bg-stone-50 rounded-lg p-4">
@@ -403,12 +467,12 @@ export const NotificationsView = {
                         <i class="fa-solid fa-calendar-check"></i> Thông tin đặt bàn
                     </h4>
                     <div class="grid grid-cols-2 gap-3 text-sm">
-                        <div><span class="text-stone-500">Thời gian:</span><p class="font-medium text-stone-900">${booking.datetime ? new Date(booking.datetime).toLocaleString('vi-VN') : 'N/A'}</p></div>
-                        <div><span class="text-stone-500">Số khách:</span><p class="font-medium text-stone-900">${booking.guests || 'N/A'} người</p></div>
-                        <div><span class="text-stone-500">Bàn:</span><p class="font-medium text-stone-900">${booking.tableName || 'Chưa gán'}</p></div>
+                        <div><span class="text-stone-500">Thời gian:</span><p class="font-medium text-stone-900">${bookingTime ? new Date(bookingTime).toLocaleString('vi-VN') : 'N/A'}</p></div>
+                        <div><span class="text-stone-500">Số khách:</span><p class="font-medium text-stone-900">${guestCount} người</p></div>
+                        <div><span class="text-stone-500">Bàn:</span><p class="font-medium text-stone-900">${tableName}</p></div>
                     </div>
                 </div>
-                ${booking.notes ? `<div class="bg-yellow-50 rounded-lg p-4"><h4 class="font-semibold text-yellow-700 mb-2 flex items-center gap-2"><i class="fa-solid fa-note-sticky"></i> Ghi chú</h4><p class="text-sm text-yellow-800">${booking.notes}</p></div>` : ''}
+                ${notes ? `<div class="bg-yellow-50 rounded-lg p-4"><h4 class="font-semibold text-yellow-700 mb-2 flex items-center gap-2"><i class="fa-solid fa-note-sticky"></i> Ghi chú</h4><p class="text-sm text-yellow-800">${notes}</p></div>` : ''}
             </div>
         `;
         
@@ -424,7 +488,13 @@ export const NotificationsView = {
         
         // Bind action handlers
         this.bindModalBookingActions(App, Router);
-    },
+    } catch (error) {
+        console.error('Error loading booking:', error);
+        contentEl.innerHTML = `<p class="text-red-500">Lỗi khi tải thông tin đặt bàn</p>`;
+        footerEl.innerHTML = `<button class="btn btn-secondary" onclick="closeModal('notificationDetailModal')">Đóng</button>
+                              <button class="btn btn-primary" onclick="window.location.pathname='/bookings'">Xem danh sách</button>`;
+    }
+},
 
     /**
      * Render review detail content with actual review data and reply form

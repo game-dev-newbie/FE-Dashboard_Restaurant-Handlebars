@@ -7,11 +7,17 @@
         </button>
         
         <!-- Search Bar -->
-        <div class="relative flex-1 max-w-lg">
+        <div class="relative flex-1 max-w-lg" id="headerSearchContainer">
             <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-stone-400"></i>
             <input type="text" 
-                   placeholder="Tìm kiếm..." 
-                   class="w-full pl-10 pr-4 py-2.5 bg-stone-50 border border-stone-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                   id="headerSearchInput"
+                   placeholder="Tìm kiếm khách hàng..." 
+                   class="w-full pl-10 pr-4 py-2.5 bg-stone-50 border border-stone-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 active:bg-white transition-all">
+            
+            <!-- Search Results Dropdown -->
+            <div id="headerSearchResults" class="hidden absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-xl border border-stone-100 max-h-96 overflow-y-auto z-50">
+                <!-- Results injected here -->
+            </div>
         </div>
         
         <!-- Date Display - Click to navigate to bookings -->
@@ -47,17 +53,34 @@
                          data-notification-id="{{id}}" data-type="{{type}}" data-booking-id="{{bookingId}}" data-review-id="{{reviewId}}" data-account-id="{{accountId}}">
                         <div class="flex items-start gap-3">
                             <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0
-                                {{#if (eq type 'BOOKING_CREATED')}}bg-green-100 text-green-600
-                                {{else if (eq type 'BOOKING_CANCELLED')}}bg-red-100 text-red-600
+                                {{#if (eq type 'BOOKING_CREATED')}}bg-yellow-100 text-yellow-600
                                 {{else if (eq type 'REVIEW_CREATED')}}bg-yellow-100 text-yellow-600
-                                {{else if (eq type 'MEMBER_APPROVAL')}}bg-orange-100 text-orange-600
-                                {{else}}bg-blue-100 text-blue-600{{/if}}">
-                                {{#if (eq type 'REVIEW_CREATED')}}
-                                <i class="fa-solid fa-star text-xs"></i>
-                                {{else if (eq type 'MEMBER_APPROVAL')}}
-                                <i class="fa-solid fa-user-plus text-xs"></i>
-                                {{else}}
-                                <i class="fa-solid fa-bell text-xs"></i>
+                                {{else if (eq type 'STAFF_REGISTERED')}}bg-yellow-100 text-yellow-600
+                                
+                                {{else if (eq type 'BOOKING_CONFIRMED')}}bg-green-100 text-green-600
+                                {{else if (eq type 'BOOKING_CHECKED_IN')}}bg-green-100 text-green-600
+                                {{else if (eq type 'BOOKING_COMPLETED')}}bg-green-100 text-green-600
+                                {{else if (eq type 'BOOKING_PAYMENT_SUCCESS')}}bg-green-100 text-green-600
+                                {{else if (eq type 'BOOKING_REFUND_SUCCESS')}}bg-green-100 text-green-600
+                                
+                                {{else if (eq type 'BOOKING_CANCELLED')}}bg-red-100 text-red-600
+                                {{else if (eq type 'BOOKING_NO_SHOW')}}bg-red-100 text-red-600
+                                
+                                {{else if (eq type 'BOOKING_UPDATED')}}bg-blue-100 text-blue-600
+                                {{else if (eq type 'STAFF_STATUS_CHANGED')}}bg-blue-100 text-blue-600
+                                {{else}}bg-stone-100 text-stone-600{{/if}}">
+                                {{#if (eq type 'BOOKING_CREATED')}}<i class="fa-solid fa-plus text-xs"></i>
+                                {{else if (eq type 'BOOKING_CONFIRMED')}}<i class="fa-solid fa-check text-xs"></i>
+                                {{else if (eq type 'BOOKING_CHECKED_IN')}}<i class="fa-solid fa-door-open text-xs"></i>
+                                {{else if (eq type 'BOOKING_COMPLETED')}}<i class="fa-solid fa-circle-check text-xs"></i>
+                                {{else if (eq type 'BOOKING_CANCELLED')}}<i class="fa-solid fa-xmark text-xs"></i>
+                                {{else if (eq type 'BOOKING_NO_SHOW')}}<i class="fa-solid fa-clock text-xs"></i>
+                                {{else if (eq type 'REVIEW_CREATED')}}<i class="fa-solid fa-star text-xs"></i>
+                                {{else if (eq type 'STAFF_REGISTERED')}}<i class="fa-solid fa-user-plus text-xs"></i>
+                                {{else if (eq type 'STAFF_STATUS_CHANGED')}}<i class="fa-solid fa-user-pen text-xs"></i>
+                                {{else if (eq type 'BOOKING_PAYMENT_SUCCESS')}}<i class="fa-solid fa-money-bill-wave text-xs"></i>
+                                {{else if (eq type 'BOOKING_REFUND_SUCCESS')}}<i class="fa-solid fa-money-bill-transfer text-xs"></i>
+                                {{else}}<i class="fa-solid fa-bell text-xs"></i>
                                 {{/if}}
                             </div>
                             <div class="flex-1 min-w-0">

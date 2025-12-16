@@ -11,9 +11,11 @@ export const NotificationsService = {
         try {
             const query = new URLSearchParams(params).toString();
             const response = await ApiService.get(`/notifications${query ? '?' + query : ''}`);
-            // Handle various response formats
-            const data = response.data || response;
-            return { data: Array.isArray(data) ? data : [], success: true };
+            // Backend returns { data: { items, pagination } }
+            const responseData = response.data || response;
+            const items = responseData.items || responseData || [];
+            const pagination = responseData.pagination || {};
+            return { data: { items, pagination }, success: true };
         } catch (error) {
             console.warn('Could not fetch notifications, using Mock:', error);
             return MockHandlers.getNotifications(params);

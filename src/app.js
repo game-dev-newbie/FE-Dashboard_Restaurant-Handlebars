@@ -27,6 +27,7 @@ import { NotificationsView } from './views/notifications.view.js';
 import { RestaurantView } from './views/restaurant.view.js';
 import { AccountsView } from './views/accounts.view.js';
 import { ProfileView } from './views/profile.view.js';
+import { HeaderView } from './views/header.view.js';
 
 const App = {
     templates: {},
@@ -202,7 +203,17 @@ const App = {
                         sidebarData.unreadCount = 0;
                     }
                     // Pass recent notifications for header dropdown (latest 5)
-                    sidebarData.recentNotifications = notificationsList.slice(0, 5);
+                    // Map API fields (snake_case) to template fields (camelCase)
+                    sidebarData.recentNotifications = notificationsList.slice(0, 5).map(n => ({
+                        id: n.id,
+                        type: n.type,
+                        title: n.title,
+                        content: n.message || n.content,
+                        isRead: n.is_read || n.isRead,
+                        bookingId: n.booking_id || n.bookingId,
+                        reviewId: n.review_id || n.reviewId,
+                        accountId: n.account_id || n.accountId
+                    }));
                     
                     // Fetch booking counts for sidebar badge
                     try {
@@ -215,9 +226,9 @@ const App = {
                         sidebarData.confirmedBookings = bookings.filter(b => b.status === 'CONFIRMED').length;
                     } catch (e) { console.warn('Could not fetch bookings:', e); }
                     
-                    // Fetch available tables count
+                    // Fetch available tables count (with high limit to get all tables)
                     try {
-                        const tablesResult = await TablesService.getList();
+                        const tablesResult = await TablesService.getList({ limit: 100 });
                         // BE data struct: { items: [...] }
                         const tablesData = tablesResult.data || {};
                         const tables = Array.isArray(tablesData) ? tablesData : (tablesData.items || []);
@@ -248,6 +259,8 @@ const App = {
                 currentRoute: Router.getCurrentPath()
             };
             this.container.innerHTML = layoutTemplate(layoutData);
+            // Initialize Header Search after rendering main layout
+            HeaderView.init(this, Router);
         } else {
             this.container.innerHTML = pageContent;
         }
@@ -262,7 +275,7 @@ const App = {
     },
 
     async renderTables() {
-        await TablesView.render(this);
+        await TablesView.render(this, Router);
     },
 
     async renderImages() {

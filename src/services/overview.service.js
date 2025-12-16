@@ -39,7 +39,7 @@ export const OverviewService = {
             const tomorrow = new Date(today.getTime() + 24*60*60*1000);
             
             const todayBookingsArr = Array.isArray(bookings) ? bookings.filter(b => {
-                const bookingDate = new Date(b.booking_date || b.date);
+                const bookingDate = new Date(b.booking_time || b.booking_date || b.date);
                 return bookingDate >= today && bookingDate < tomorrow;
             }) : [];
             
@@ -49,9 +49,8 @@ export const OverviewService = {
 
             // Calculate Guests Today (from confirmed/checked-in/pending bookings today)
             const guestsToday = todayBookingsArr.reduce((sum, b) => {
-                // Only count valid bookings
                 if (b.status === 'CANCELLED' || b.status === 'REJECTED') return sum;
-                return sum + (parseInt(b.guest_count) || 0);
+                return sum + (parseInt(b.people_count || b.guest_count) || 0);
             }, 0);
 
             // Calculate Total Capacity
@@ -62,31 +61,54 @@ export const OverviewService = {
             
             const upcomingBookings = Array.isArray(bookings) ? bookings
                 .filter(b => {
-                    const bookingDate = new Date(b.booking_date || b.date);
+                    const bookingDate = new Date(b.booking_time || b.booking_date || b.date);
                     return bookingDate >= now && (b.status === 'PENDING' || b.status === 'CONFIRMED');
                 })
-                .sort((a, b) => new Date(a.booking_date) - new Date(b.booking_date))
+                .sort((a, b) => new Date(a.booking_time || a.booking_date) - new Date(b.booking_time || b.booking_date))
                 .slice(0, 5) : [];
             
             // Format upcoming bookings for display
             const formattedUpcoming = upcomingBookings.map(b => {
-                const date = new Date(b.booking_date || b.date);
+                const date = new Date(b.booking_time || b.booking_date || b.date);
                 return {
                     id: b.id,
                     time: date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
                     date: date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' }),
-                    customerName: b.customer_name || 'Khách vãng lai',
-                    customerPhone: b.customer_phone || '',
-                    guests: b.guest_count || 0,
-                    table: b.table_name || (b.Table ? b.Table.name : null),
+                    customerName: b.customer_name || (b.user ? b.user.display_name : 'Khách vãng lai'),
+                    customerPhone: b.phone || (b.user ? b.user.phone : ''),
+                    guests: b.people_count || b.guest_count || 0,
+                    table: b.table ? b.table.name : (b.table_name || 'Chưa gán'),
                     status: b.status
                 };
             });
 
+            // Calculate Yesterday stats for comparison
+            const yesterday = new Date(today.getTime() - 24*60*60*1000);
+            const yesterdayBookingsArr = Array.isArray(bookings) ? bookings.filter(b => {
+                const bookingDate = new Date(b.booking_time || b.booking_date || b.date);
+                return bookingDate >= yesterday && bookingDate < today;
+            }) : [];
+
+            const yesterdayGuestsCount = yesterdayBookingsArr.reduce((sum, b) => {
+                if (b.status === 'CANCELLED' || b.status === 'REJECTED') return sum;
+                return sum + (parseInt(b.people_count || b.guest_count) || 0);
+            }, 0);
+
+            // Calculate trend percentages
+            const calcTrend = (today, yesterday) => {
+                if (yesterday === 0) return today > 0 ? 100 : 0;
+                return Math.round(((today - yesterday) / yesterday) * 100);
+            };
+
+            const bookingsTrend = calcTrend(todayBookingsArr.length, yesterdayBookingsArr.length);
+            const guestsTrend = calcTrend(guestsToday, yesterdayGuestsCount);
+
             return {
                 kpis: {
                     bookingsToday: todayBookingsArr.length,
+                    bookingsTrend: bookingsTrend,
                     guestsToday: guestsToday,
+                    guestsTrend: guestsTrend,
                     pendingBookings: pendingBookingsArr.length,
                     tableOccupancy: occupancy
                 },

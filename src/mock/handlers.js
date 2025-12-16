@@ -143,14 +143,14 @@ export const MockHandlers = {
             return {
                 id: b.id,
                 code: 'BK' + String(b.id).padStart(3, '0'),
-                customerName: user ? user.display_name : 'Khách',
-                customerPhone: user ? user.phone : '',
-                guests: b.people_count,
-                datetime: b.booking_time,
-                tableId: b.table_id,
-                tableName: table ? table.name : null,
+                customer_name: user ? user.display_name : 'Khách',
+                phone: user ? user.phone : '',
+                people_count: b.people_count,
+                booking_time: b.booking_time,
+                table_id: b.table_id,
+                table: table ? { name: table.name } : null,
                 status: b.status,
-                deposit: b.deposit_amount,
+                deposit_amount: b.deposit_amount,
                 note: b.note
             };
         });
@@ -164,13 +164,49 @@ export const MockHandlers = {
         if (params.keyword) {
             const kw = params.keyword.toLowerCase();
             result = result.filter(b => 
-                b.customerName.toLowerCase().includes(kw) || 
-                b.customerPhone.includes(kw) ||
+                (b.customer_name && b.customer_name.toLowerCase().includes(kw)) || 
+                (b.phone && b.phone.includes(kw)) ||
                 b.code.toLowerCase().includes(kw)
             );
         }
         
-        return { data: result, total: result.length };
+        // Filter by date range (using from_date / to_date)
+        if (params.from_date) {
+            const fromDate = new Date(params.from_date);
+            fromDate.setHours(0, 0, 0, 0);
+            result = result.filter(b => new Date(b.booking_time) >= fromDate);
+        }
+        if (params.to_date) {
+            const toDate = new Date(params.to_date);
+            toDate.setHours(23, 59, 59, 999);
+            result = result.filter(b => new Date(b.booking_time) <= toDate);
+        }
+        
+        const page = parseInt(params.page) || 1;
+        const limit = parseInt(params.limit) || 10;
+        const startIndex = (page - 1) * limit;
+        const endIndex = startIndex + limit;
+
+        const paginatedData = result.slice(startIndex, endIndex);
+        
+        return { 
+            data: paginatedData, 
+            total: result.length,
+            page,
+            limit,
+            totalPages: Math.ceil(result.length / limit),
+            // Legacy pagination object for some views if needed, but Backend returns top-level fields too
+            pagination: {
+                total: result.length,
+                page,
+                limit,
+                totalPages: Math.ceil(result.length / limit),
+                from: startIndex + 1,
+                to: Math.min(endIndex, result.length),
+                hasPrev: page > 1,
+                hasNext: endIndex < result.length
+            }
+        };
     },
 
     async confirmBooking(id) {
@@ -215,9 +251,9 @@ export const MockHandlers = {
 
     // ==================== TABLES ====================
     
-    async getTables() {
+    async getTables(params = {}) {
         await this.delay();
-        const data = MOCK_DATA.restaurantTables.map(t => ({
+        let data = MOCK_DATA.restaurantTables.map(t => ({
             id: t.id,
             name: t.name,
             capacity: t.capacity,
@@ -226,7 +262,27 @@ export const MockHandlers = {
             viewImage: t.view_image_url,
             viewNote: t.view_note
         }));
-        return { data, total: data.length };
+
+        const page = parseInt(params.page) || 1;
+        const limit = parseInt(params.limit) || 12; // 12 items per page for grid
+        const startIndex = (page - 1) * limit;
+        const endIndex = startIndex + limit;
+        
+        const paginatedData = data.slice(startIndex, endIndex);
+
+        return { 
+            data: paginatedData, 
+            total: data.length,
+            pagination: {
+                currentPage: page,
+                totalPages: Math.ceil(data.length / limit),
+                total: data.length,
+                from: startIndex + 1,
+                to: Math.min(endIndex, data.length),
+                hasNext: endIndex < data.length,
+                hasPrev: page > 1
+            }
+        };
     },
 
     async createTable(data) {

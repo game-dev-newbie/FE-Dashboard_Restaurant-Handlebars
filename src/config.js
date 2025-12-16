@@ -10,7 +10,8 @@ export const CONFIG = {
 
   // Tự động chuyển sang mock data nếu đã fallback
   get USE_MOCK() {
-    return localStorage.getItem('IS_MOCK_MODE') === 'true';
+    // Force false to ensure we use the Real Backend
+    return false; // localStorage.getItem('IS_MOCK_MODE') === 'true';
   },
 
   // Các khóa lưu trữ trong LocalStorage
