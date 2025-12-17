@@ -217,7 +217,7 @@ const App = {
                     
                     // Fetch booking counts for sidebar badge
                     try {
-                        const bookingsResult = await BookingsService.getList();
+                        const bookingsResult = await BookingsService.getList({ limit: 1000 });
                         // BE data struct: { items: [...] }
                         const bookingsData = bookingsResult.data || {};
                         const bookings = Array.isArray(bookingsData) ? bookingsData : (bookingsData.items || []);

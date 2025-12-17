@@ -30,7 +30,8 @@ export const BookingsView = {
 
         // Prepare pagination view model using offset-based pagination
         const limit = parseInt(pagination.limit) || 10;
-        const offset = parseInt(pagination.offset) || 0;
+        // Use params.offset as source of truth if API doesn't return it
+        const offset = parseInt(params.offset) || parseInt(pagination.offset) || 0;
         const total = pagination.total || 0;
         const currentPage = Math.floor(offset / limit) + 1;
         const totalPages = Math.ceil(total / limit);

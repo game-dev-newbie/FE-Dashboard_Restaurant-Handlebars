@@ -6,6 +6,7 @@ import { NotificationsService } from '../services/notifications.service.js';
 import { BookingsService } from '../services/bookings.service.js';
 import { ReviewsService } from '../services/reviews.service.js';
 import { AccountsService } from '../services/accounts.service.js';
+import { BookingDetailModal } from '../components/booking-detail-modal.js';
 
 export const NotificationsView = {
     async render(App, Router) {
@@ -321,6 +322,36 @@ export const NotificationsView = {
                 </div>
             `;
         }
+    },
+
+    /**
+     * Ensure notification modal exists in DOM
+     */
+    ensureNotificationModal() {
+        if (document.getElementById('notificationDetailModal')) return;
+        
+        const modalHtml = `
+            <div id="notificationDetailModal" class="hidden">
+                <div class="modal-backdrop" onclick="closeModal('notificationDetailModal')"></div>
+                <div class="modal">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="notificationModalTitle">Chi tiết thông báo</h5>
+                        <button class="modal-close" onclick="closeModal('notificationDetailModal')">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                    <div class="modal-body" id="notificationDetailContent">
+                        <div class="text-center py-4">
+                            <i class="fa-solid fa-spinner fa-spin text-2xl text-stone-400"></i>
+                        </div>
+                    </div>
+                    <div class="modal-footer" id="notificationDetailFooter">
+                        <button class="btn btn-secondary" onclick="closeModal('notificationDetailModal')">Đóng</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
     },
 
     /**

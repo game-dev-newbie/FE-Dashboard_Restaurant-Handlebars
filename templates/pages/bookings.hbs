@@ -186,6 +186,24 @@
             </tbody>
         </table>
     </div>
+    
+    <!-- Pagination -->
+    <div class="flex items-center justify-between p-4 border-t border-stone-100">
+        <div class="text-sm text-stone-500">
+            Hiển thị <span class="font-medium">{{pagination.from}}</span> đến <span class="font-medium">{{pagination.to}}</span> trong tổng số <span class="font-medium">{{total}}</span> kết quả
+        </div>
+        <div class="flex gap-2">
+            <button class="btn btn-sm btn-secondary" onclick="changePage({{subtract pagination.currentPage 1}})" {{#unless pagination.hasPrev}}disabled{{/unless}}>
+                <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            <span class="px-3 py-1 bg-stone-100 rounded text-sm font-medium flex items-center">
+                Trang {{pagination.currentPage}} / {{pagination.totalPages}}
+            </span>
+            <button class="btn btn-sm btn-secondary" onclick="changePage({{add pagination.currentPage 1}})" {{#unless pagination.hasNext}}disabled{{/unless}}>
+                <i class="fa-solid fa-chevron-right"></i>
+            </button>
+        </div>
+    </div>
 </div>
 
 <!-- Assign Table Modal -->
@@ -217,25 +235,5 @@
     </div>
 </div>
 
-<!-- Booking Detail Modal -->
-<div id="bookingDetailModal" class="hidden">
-    <div class="modal-backdrop" onclick="closeModal('bookingDetailModal')"></div>
-    <div class="modal">
-        <div class="modal-header">
-            <h5 class="modal-title">Chi tiết đặt bàn</h5>
-            <button class="modal-close" onclick="closeModal('bookingDetailModal')">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-        </div>
-        <div class="modal-body" id="bookingDetailContent">
-            <!-- Content will be populated dynamically -->
-            <div class="text-center py-4">
-                <i class="fa-solid fa-spinner fa-spin text-2xl text-stone-400"></i>
-            </div>
-        </div>
-        <div class="modal-footer">
-            <button class="btn btn-secondary" onclick="closeModal('bookingDetailModal')">Đóng</button>
-        </div>
-    </div>
-</div>
+
 

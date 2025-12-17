@@ -44,7 +44,10 @@ export const BookingDetailModal = {
         const contentEl = document.getElementById('bookingDetailContent');
         const footerEl = document.getElementById('bookingDetailFooter');
         
-        if (!contentEl || !footerEl) return;
+        if (!contentEl || !footerEl) {
+            console.error('Missing modal elements');
+            return;
+        }
         
         // Show loading
         contentEl.innerHTML = `
