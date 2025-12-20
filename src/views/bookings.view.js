@@ -4,6 +4,7 @@
  */
 import { BookingsService } from '../services/bookings.service.js';
 import { TablesService } from '../services/tables.service.js';
+import { debounce } from '../utils/helpers.js';
 
 export const BookingsView = {
     /**
@@ -96,27 +97,25 @@ export const BookingsView = {
             Router.navigate(`/bookings?${params.toString()}`);
         };
 
-        // Debounced search input
+        // Debounced search input - 500ms là giá trị tiêu chuẩn tối ưu cho UX và API calls
         const searchInput = document.querySelector('[name="q"]');
         if (searchInput) {
-            let debounceTimer;
-            searchInput.addEventListener('input', (e) => {
-                clearTimeout(debounceTimer);
-                debounceTimer = setTimeout(() => {
-                    const q = e.target.value.trim();
-                    const currentParams = Router.getQueryParams();
-                    
-                    const params = new URLSearchParams();
-                    if (currentParams.status) params.set('status', currentParams.status);
-                    if (currentParams.from_date) params.set('from_date', currentParams.from_date);
-                    if (currentParams.to_date) params.set('to_date', currentParams.to_date);
-                    if (q) params.set('q', q);
-                    params.set('limit', currentParams.limit || 10);
-                    params.set('offset', 0); // Reset to first page on new search
-                    
-                    Router.navigate(`/bookings?${params.toString()}`);
-                }, 300); // 300ms debounce
-            });
+            const handleSearch = debounce((e) => {
+                const q = e.target.value.trim();
+                const currentParams = Router.getQueryParams();
+                
+                const params = new URLSearchParams();
+                if (currentParams.status) params.set('status', currentParams.status);
+                if (currentParams.from_date) params.set('from_date', currentParams.from_date);
+                if (currentParams.to_date) params.set('to_date', currentParams.to_date);
+                if (q) params.set('q', q);
+                params.set('limit', currentParams.limit || 10);
+                params.set('offset', 0); // Reset to first page on new search
+                
+                Router.navigate(`/bookings?${params.toString()}`);
+            }, 500); // 500ms debounce - tối ưu cho realtime search
+            
+            searchInput.addEventListener('input', handleSearch);
         }
 
         // Xử lý filter và search

@@ -4,6 +4,7 @@
  */
 import { BookingsService } from '../services/bookings.service.js';
 import { BookingDetailModal } from '../components/booking-detail-modal.js';
+import { debounce } from '../utils/helpers.js';
 
 export const HeaderView = {
     init(App, Router) {
@@ -17,23 +18,21 @@ export const HeaderView = {
 
         if (!searchInput || !searchResults) return;
 
-        let debounceTimer;
+        // Xử lý input search với debounce 500ms - tối ưu cho UX và API calls
+        const handleSearch = debounce((query) => {
+            this.handleSearch(query, searchResults, App);
+        }, 500);
 
-        // Xử lý input search
         searchInput.addEventListener('input', (e) => {
             const query = e.target.value.trim();
-            
-            clearTimeout(debounceTimer);
-            
+
             if (query.length < 2) {
                 searchResults.classList.add('hidden');
                 searchResults.innerHTML = '';
                 return;
             }
 
-            debounceTimer = setTimeout(() => {
-                this.handleSearch(query, searchResults, App);
-            }, 300);
+            handleSearch(query);
         });
 
         // Xử lý click outside để đóng dropdown

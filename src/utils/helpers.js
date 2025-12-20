@@ -274,3 +274,23 @@ export function registerHandlebarsHelpers() {
         return array.join(separator);
     });
 }
+
+/**
+ * Debounce Utility - Trì hoãn thực thi hàm cho đến khi người dùng ngừng gõ
+ * @param {Function} func - Hàm cần debounce
+ * @param {number} delay - Thời gian trì hoãn (mặc định 500ms)
+ * @returns {Function} Hàm đã được debounce
+ * 
+ * 500ms là giá trị tiêu chuẩn phù hợp cho search input:
+ * - Đủ ngắn để người dùng không cảm thấy chậm
+ * - Đủ dài để giảm số lượng API calls không cần thiết
+ */
+export function debounce(func, delay = 500) {
+    let timeoutId;
+    return function(...args) {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => {
+            func.apply(this, args);
+        }, delay);
+    };
+}
