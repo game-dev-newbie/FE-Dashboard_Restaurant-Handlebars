@@ -3,7 +3,7 @@
  */
 export const CONFIG = {
   // URL gốc của Backend API
-  API_BASE_URL: "https://pyramidally-unborrowed-cherie.ngrok-free.dev",
+  API_BASE_URL: "http://localhost:8027",
 
   // Tiền tố API cho các endpoint dashboard
   API_PREFIX: "/api/v1/dashboard",

@@ -629,10 +629,13 @@ export const MockHandlers = {
             phone: r.phone,
             description: r.description,
             tags: tags,
+            open_time: r.open_time || '08:00',
+            close_time: r.close_time || '22:00',
             require_deposit: r.require_deposit,
             default_deposit_amount: r.default_deposit_amount,
             average_rating: r.average_rating,
-            review_count: r.review_count
+            review_count: r.review_count,
+            invite_code: r.invite_code
         };
     },
 
@@ -648,6 +651,8 @@ export const MockHandlers = {
             phone: data.phone || restaurant.phone,
             description: data.description || restaurant.description,
             tags: data.tags || restaurant.tags,
+            open_time: data.open_time || restaurant.open_time,
+            close_time: data.close_time || restaurant.close_time,
             require_deposit: data.require_deposit !== undefined ? data.require_deposit : restaurant.require_deposit,
             default_deposit_amount: data.default_deposit_amount !== undefined ? parseInt(data.default_deposit_amount) : restaurant.default_deposit_amount
         });

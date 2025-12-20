@@ -18,6 +18,8 @@ export const RestaurantService = {
             phone: data.phone,
             description: data.description,
             tags: data.tags,
+            open_time: data.open_time,
+            close_time: data.close_time,
             require_deposit: data.requireDeposit === 'on' || data.requireDeposit === true,
             default_deposit_amount: data.defaultDeposit ? parseInt(data.defaultDeposit) : undefined
         };

@@ -117,18 +117,21 @@ export const AuthService = {
         };
     },
 
-    /**
-     * Yêu cầu đặt lại mật khẩu
-     */
     async forgotPassword(email) {
         return ApiService.post('/auth/forgot-password', { email });
     },
 
     /**
-     * Lấy thông tin user hiện tại
+     * Đặt lại mật khẩu (Verify OTP + Password)
+     * payload: { email, reset_token, new_password }
      */
+    async resetPassword(payload) {
+        return ApiService.post('/auth/reset-password', payload);
+    },
+
     async getMe() {
-        return ApiService.get('/auth/me');
+        // Return stored user for now as /auth/me does not exist
+        return { success: true, data: this.getStoredUser() };
     },
 
     /**

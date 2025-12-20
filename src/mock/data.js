@@ -100,6 +100,8 @@ const _restaurants = [
         phone: '024 1234 5678',
         description: 'Nhà hàng ẩm thực Việt Nam truyền thống với không gian cổ kính, ấm cúng. Chuyên phục vụ các món ăn đặc sản miền Bắc.',
         tags: 'vietnamese,traditional,family',
+        open_time: '08:00',
+        close_time: '22:00',
         require_deposit: true,
         default_deposit_amount: 200000,
         is_active: true,

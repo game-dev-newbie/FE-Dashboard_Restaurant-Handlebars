@@ -49,6 +49,34 @@
                 </div>
             </div>
             
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="form-group mb-0">
+                    <label for="openTime" class="form-label">
+                        Giờ mở cửa <span class="text-red-500">*</span>
+                    </label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fa-solid fa-clock text-stone-400"></i>
+                        </div>
+                        <input type="time" class="form-input pl-10" id="openTime" name="open_time" 
+                               value="{{open_time}}" required>
+                    </div>
+                </div>
+                
+                <div class="form-group mb-0">
+                    <label for="closeTime" class="form-label">
+                        Giờ đóng cửa <span class="text-red-500">*</span>
+                    </label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fa-solid fa-clock text-stone-400"></i>
+                        </div>
+                        <input type="time" class="form-input pl-10" id="closeTime" name="close_time" 
+                               value="{{close_time}}" required>
+                    </div>
+                </div>
+            </div>
+            
             <div class="form-group">
                 <label for="description" class="form-label">Mô tả</label>
                 <textarea class="form-input" id="description" name="description" 

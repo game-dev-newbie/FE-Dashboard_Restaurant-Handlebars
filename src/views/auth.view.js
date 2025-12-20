@@ -53,10 +53,15 @@ export const AuthView = {
     /**
      * Bind events cho trang Forgot Password
      */
+    /**
+     * Bind events cho trang Forgot Password
+     */
     bindForgotPasswordEvents(App) {
         const form = document.getElementById('forgotPasswordForm');
         const successDiv = document.getElementById('forgotPasswordSuccess');
         const resendBtn = document.getElementById('resendEmailBtn');
+        const goToStep2Btn = document.getElementById('goToStep2Btn');
+        const resetPasswordForm = document.getElementById('resetPasswordForm');
 
         if (form) {
             form.addEventListener('submit', async (e) => {
@@ -67,34 +72,118 @@ export const AuthView = {
 
         if (resendBtn) {
             resendBtn.addEventListener('click', async () => {
-                // Reset to form view
+                // Reset to Step 1
                 if (form) form.classList.remove('hidden');
                 if (successDiv) successDiv.classList.add('hidden');
+                if (resetPasswordForm) resetPasswordForm.classList.add('hidden');
             });
         }
+
+        if (goToStep2Btn) {
+            goToStep2Btn.addEventListener('click', () => {
+                // Hide Success Message, Show Step 2
+                if (successDiv) successDiv.classList.add('hidden');
+                if (resetPasswordForm) resetPasswordForm.classList.remove('hidden');
+            });
+        }
+
+        if (resetPasswordForm) {
+            resetPasswordForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                await this.handleResetPassword(resetPasswordForm, App);
+            });
+        }
+        
+        // Expose togglePassword specifically for this page if not global
+        // (Assuming window.togglePassword is set in bindRegisterOwnerEvents but might not be available here if that page wasn't loaded)
+        // Let's ensure it's available.
+         window.togglePassword = function(inputId, iconId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(iconId);
+            if (input && icon) {
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    icon.classList.remove('fa-eye');
+                    icon.classList.add('fa-eye-slash');
+                } else {
+                    input.type = 'password';
+                    icon.classList.remove('fa-eye-slash');
+                    icon.classList.add('fa-eye');
+                }
+            }
+        };
     },
 
     /**
-     * Xử lý yêu cầu quên mật khẩu
+     * Bước 1: Gửi yêu cầu quên mật khẩu
      */
     async handleForgotPassword(form, App) {
-        const email = form.querySelector('input[name="email"]').value;
+        const emailInput = form.querySelector('input[name="email"]');
+        const email = emailInput.value.trim();
 
         try {
             App.showLoading(form.querySelector('button[type="submit"]'));
             
-            // Call API (mock for now - just show success)
             const result = await AuthService.forgotPassword(email);
             
             if (result.success) {
-                // Hide form, show success
+                // Store email for Step 2
+                const hiddenEmail = document.getElementById('resetEmailHidden');
+                if (hiddenEmail) hiddenEmail.value = email;
+
+                // Hide form, show success (Step 1 Complete)
                 form.classList.add('hidden');
                 document.getElementById('forgotPasswordSuccess').classList.remove('hidden');
             } else {
                 App.showError(result.message || 'Không tìm thấy email này trong hệ thống');
             }
         } catch (error) {
-            App.showError('Có lỗi xảy ra. Vui lòng thử lại sau.');
+             // Handle generic or specific errors
+             let msg = 'Có lỗi xảy ra. Vui lòng thử lại sau.';
+             if (error.data && error.data.message) msg = error.data.message;
+             App.showError(msg);
+        } finally {
+            App.hideLoading(form.querySelector('button[type="submit"]'));
+        }
+    },
+
+    /**
+     * Bước 2: Đặt lại mật khẩu
+     */
+    async handleResetPassword(form, App) {
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData.entries());
+
+        // Validate
+        if (data.new_password !== data.confirm_new_password) {
+            App.showError('Mật khẩu nhập lại không khớp');
+            return;
+        }
+
+        if (data.new_password.length < 6) {
+             App.showError('Mật khẩu phải có ít nhất 6 ký tự');
+             return;
+        }
+
+        try {
+            App.showLoading(form.querySelector('button[type="submit"]'));
+            
+            const result = await AuthService.resetPassword({
+                email: data.email,
+                reset_token: data.reset_token,
+                new_password: data.new_password
+            });
+            
+            if (result.success) {
+                App.showSuccess(result.message || 'Đặt lại mật khẩu thành công!');
+                setTimeout(() => {
+                    window.location.pathname = '/login';
+                }, 2000);
+            }
+        } catch (error) {
+             let msg = 'Đặt lại mật khẩu thất bại.';
+             if (error.data && error.data.message) msg = error.data.message;
+             App.showError(msg);
         } finally {
             App.hideLoading(form.querySelector('button[type="submit"]'));
         }
