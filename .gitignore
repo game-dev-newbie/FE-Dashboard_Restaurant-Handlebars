@@ -38,3 +38,4 @@ build/
 # Temporary files
 *.tmp
 *.temp
+API_DOCUMENTATION.md
