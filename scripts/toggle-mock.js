@@ -17,6 +17,8 @@ const SRC_SERVICES = path.join(ROOT, 'src', 'services');
 const MOCK_SERVICES = path.join(SRC_SERVICES, 'mock-versions');
 const PROD_SERVICES = path.join(SRC_SERVICES, 'prod-versions');
 const CONFIG_FILE = path.join(ROOT, 'src', 'config.js');
+const ENV_FILE = path.join(ROOT, '.env');
+
 
 // Service files to copy
 const SERVICE_FILES = [
@@ -68,15 +70,82 @@ function copyServices(sourceDir, destDir) {
 }
 
 /**
- * Update config.js USE_MOCK value
+ * Update config.js with values from .env or manual toggle
  */
-function updateConfig(useMock) {
+function updateConfig(options = {}) {
     let content = fs.readFileSync(CONFIG_FILE, 'utf8');
-    content = content.replace(
-        /USE_MOCK:\s*(true|false)/,
-        `USE_MOCK: ${useMock}`
-    );
+    
+    // Update USE_MOCK
+    if (options.useMock !== undefined) {
+        content = content.replace(
+            /USE_MOCK:\s*(true|false)/,
+            `USE_MOCK: ${options.useMock}`
+        );
+    }
+
+    // Update API_BASE_URL
+    if (options.apiBaseUrl !== undefined) {
+        content = content.replace(
+            /API_BASE_URL:\s*["'].*?["']/,
+            `API_BASE_URL: "${options.apiBaseUrl}"`
+        );
+    }
+    
     fs.writeFileSync(CONFIG_FILE, content, 'utf8');
+}
+
+/**
+ * Parse .env file
+ */
+function parseEnv() {
+    if (!fs.existsSync(ENV_FILE)) return {};
+    
+    const content = fs.readFileSync(ENV_FILE, 'utf8');
+    const env = {};
+    
+    content.split('\n').forEach(line => {
+        const match = line.match(/^\s*([\w.-]+)\s*=\s*(.*)?\s*$/);
+        if (match) {
+            let value = (match[2] || '').trim();
+            // Remove quotes if present
+            if (value.startsWith('"') && value.endsWith('"')) value = value.slice(1, -1);
+            if (value.startsWith("'") && value.endsWith("'")) value = value.slice(1, -1);
+            env[match[1]] = value;
+        }
+    });
+    
+    return env;
+}
+
+/**
+ * Sync .env values to config.js
+ */
+function syncEnv() {
+    log('\n🔄 Đang đồng bộ cấu hình từ .env...', 'yellow');
+    
+    if (!fs.existsSync(ENV_FILE)) {
+        log('⚠️ Code: Không tìm thấy file .env, bỏ qua đồng bộ.', 'yellow');
+        return;
+    }
+
+    const env = parseEnv();
+    const options = {};
+
+    if (env.API_BASE_URL) options.apiBaseUrl = env.API_BASE_URL;
+    if (env.USE_MOCK) options.useMock = env.USE_MOCK;
+
+    updateConfig(options);
+    
+    // Also handle copying services if USE_MOCK changed
+    if (env.USE_MOCK === 'true') {
+        copyServices(MOCK_SERVICES, SRC_SERVICES);
+        log('🎭 Đã đồng bộ sang chế độ MOCK', 'green');
+    } else if (env.USE_MOCK === 'false') {
+        copyServices(PROD_SERVICES, SRC_SERVICES);
+        log('🚀 Đã đồng bộ sang chế độ PRODUCTION', 'green');
+    }
+
+    log('✅ Đã cập nhật xong config.js!', 'green');
 }
 
 /**
@@ -108,7 +177,7 @@ function enableMock() {
     const copied = copyServices(MOCK_SERVICES, SRC_SERVICES);
     
     // Update config
-    updateConfig('true');
+    updateConfig({ useMock: 'true' });
     
     log(`\n✅ Đã bật chế độ MOCK! (${copied} files)`, 'green');
     log('\n📧 Account test:', 'cyan');
@@ -134,7 +203,7 @@ function enableProd() {
     const copied = copyServices(PROD_SERVICES, SRC_SERVICES);
     
     // Update config
-    updateConfig('false');
+    updateConfig({ useMock: 'false' });
     
     log(`\n✅ Đã bật chế độ PRODUCTION! (${copied} files)`, 'green');
     log('\n🔗 API sẽ kết nối đến Backend thực', 'cyan');
@@ -179,6 +248,9 @@ function showHelp() {
 const command = process.argv[2];
 
 switch (command) {
+    case 'sync':
+        syncEnv();
+        break;
     case 'mock':
         enableMock();
         break;

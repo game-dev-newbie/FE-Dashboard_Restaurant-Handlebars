@@ -2,13 +2,13 @@
  * Cấu hình ứng dụng
  */
 export const CONFIG = {
-  // URL gốc của Backend API
+  // URL gốc của Backend API (Tự động cập nhật từ .env)
   API_BASE_URL: "http://localhost:8027",
 
   // Tiền tố API cho các endpoint dashboard
   API_PREFIX: "/api/v1/dashboard",
 
-  // Tự động chuyển sang mock data nếu đã fallback
+  // Tự động chuyển sang mock data (Tự động cập nhật từ .env)
   get USE_MOCK() {
     // Set to true for FE-only testing without backend
     return false;
