@@ -86,12 +86,20 @@ export const ApiService = {
     async refreshAccessToken() {
         const refreshToken = this.getRefreshToken();
         
+        console.log('🔄 [Token Refresh] Starting refresh process...');
+        console.log('🔄 [Token Refresh] Refresh token exists:', !!refreshToken);
+        
         if (!refreshToken) {
+            console.error('🔄 [Token Refresh] No refresh token available');
             throw new Error('No refresh token available');
         }
 
         try {
-            const response = await fetch(this.buildUrl('/auth/refresh'), {
+            // Use COMMON_PREFIX for auth endpoints
+            const url = `${CONFIG.API_BASE_URL}${CONFIG.COMMON_PREFIX}/auth/refresh`;
+            console.log('🔄 [Token Refresh] Calling:', url);
+            
+            const response = await fetch(url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -99,20 +107,60 @@ export const ApiService = {
                 body: JSON.stringify({ refreshToken })
             });
 
+            console.log('🔄 [Token Refresh] Response status:', response.status);
+
             if (!response.ok) {
-                throw new Error('Token refresh failed');
+                // Parse error response for details
+                let errorDetail = `Status: ${response.status}`;
+                try {
+                    const errorBody = await response.json();
+                    errorDetail = errorBody.message || errorBody.error?.message || errorDetail;
+                    console.error('🔄 [Token Refresh] Error response:', errorBody);
+                } catch (e) {
+                    console.error('🔄 [Token Refresh] Could not parse error response');
+                }
+                throw new Error(`Token refresh failed: ${errorDetail}`);
             }
 
-            const data = await response.json();
+            const responseData = await response.json();
+            console.log('🔄 [Token Refresh] Success response:', responseData);
             
+            // Handle multiple response formats from BE:
+            // Format 1: { success: true, data: { accessToken, refreshToken } }
+            // Format 2: { accessToken, refreshToken }
+            // Format 3: { success: true, data: { access_token, refresh_token } }
+            // Format 4: { data: { tokens: { accessToken, refreshToken } } }
+            const data = responseData.data || responseData;
+            const tokens = data.tokens || data;
+            
+            const newAccessToken = tokens.accessToken || tokens.access_token;
+            const newRefreshToken = tokens.refreshToken || tokens.refresh_token;
+
+            if (!newAccessToken) {
+                console.error('🔄 [Token Refresh] No access token in response:', responseData);
+                throw new Error('No access token returned from refresh');
+            }
+
             // Lưu tokens mới
-            this.saveTokens(data.accessToken, data.refreshToken);
+            this.saveTokens(newAccessToken, newRefreshToken);
+            console.log('🔄 [Token Refresh] Tokens saved successfully');
             
-            return data.accessToken;
+            return newAccessToken;
         } catch (error) {
-            // Refresh thất bại -> đăng xuất
-            this.clearTokens();
-            window.location.pathname = '/login';
+            console.error('🔄 [Token Refresh] Failed:', error.message);
+            
+            // Chỉ logout khi refresh token thực sự không hợp lệ (401/403)
+            // Không logout khi network error để user có thể retry
+            if (error.message.includes('401') || error.message.includes('403') || 
+                error.message.includes('expired') || error.message.includes('invalid') ||
+                error.message.includes('No refresh token')) {
+                console.error('🔄 [Token Refresh] Token invalid, clearing and redirecting to login');
+                this.clearTokens();
+                window.location.pathname = '/login';
+            } else {
+                console.warn('🔄 [Token Refresh] Temporary error, not logging out:', error.message);
+            }
+            
             throw error;
         }
     },
@@ -137,11 +185,16 @@ export const ApiService = {
             
             // Nếu 401 Unauthorized và chưa retry
             if (response.status === 401 && retryCount === 0) {
+                console.log('🔐 [Auth] Received 401, attempting token refresh...');
+                console.log('🔐 [Auth] Endpoint:', endpoint);
+                
                 // Nếu đang refresh, đợi kết quả
                 if (isRefreshing) {
+                    console.log('🔐 [Auth] Refresh already in progress, waiting...');
                     return new Promise((resolve, reject) => {
                         subscribeTokenRefresh(async (newToken) => {
                             try {
+                                console.log('🔐 [Auth] Got new token from refresh, retrying request...');
                                 fetchOptions.headers['Authorization'] = `Bearer ${newToken}`;
                                 const retryResponse = await fetch(url, fetchOptions);
                                 if (!retryResponse.ok) {
@@ -149,6 +202,7 @@ export const ApiService = {
                                 }
                                 resolve(await retryResponse.json());
                             } catch (err) {
+                                console.error('🔐 [Auth] Retry after refresh failed:', err.message);
                                 reject(err);
                             }
                         });
@@ -157,22 +211,41 @@ export const ApiService = {
 
                 // Bắt đầu refresh token
                 isRefreshing = true;
+                console.log('🔐 [Auth] Starting token refresh...');
                 
                 try {
                     const newToken = await this.refreshAccessToken();
                     isRefreshing = false;
                     onTokenRefreshed(newToken);
+                    console.log('🔐 [Auth] Token refresh successful, retrying original request...');
                     
                     // Retry request với token mới
                     return this.request(endpoint, options, retryCount + 1);
                 } catch (refreshError) {
+                    console.error('🔐 [Auth] Token refresh failed:', refreshError.message);
                     isRefreshing = false;
                     throw refreshError;
                 }
             }
             
             if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}));
+                // Handle 413 specific
+                if (response.status === 413) {
+                    throw new Error('File quá lớn. Vui lòng chọn ảnh nhỏ hơn 5MB.');
+                }
+                
+                const contentType = response.headers.get('content-type');
+                let errorData = {};
+                
+                if (contentType && contentType.includes('application/json')) {
+                    errorData = await response.json().catch(() => ({}));
+                } else {
+                    // Handle HTML or text response (common for 500/404/413 from Nginx/Express)
+                    const text = await response.text();
+                    console.error('Non-JSON Error Response:', text);
+                    errorData = { message: 'Có lỗi xảy ra trên server (HTML Response)' };
+                }
+
                 const errorMessage = errorData.error?.message || errorData.message || `HTTP ${response.status}`;
                 const error = new Error(errorMessage);
                 error.data = errorData; // Attach full error data
