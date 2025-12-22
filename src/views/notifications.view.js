@@ -11,25 +11,72 @@ import { BookingDetailModal } from '../components/booking-detail-modal.js';
 export const NotificationsView = {
     async render(App, Router) {
         const params = Router.getQueryParams();
+        
+        // Ensure defaults for pagination - use limit/offset like bookings
+        if (!params.limit) params.limit = 20;
+        if (!params.offset) params.offset = 0;
+        
         const result = await NotificationsService.getList(params);
         
-        // Backend returns: { data: { items: [...], pagination: {...} } }
+        // Service now returns: { data: { items: [...], pagination: {...} }, success: true }
         const notifData = result.data || {};
-        const rawNotifications = notifData.items || (Array.isArray(notifData) ? notifData : []);
-        const pagination = notifData.pagination || {};
+        const rawNotifications = notifData.items || [];
+        const bePagination = notifData.pagination || {};
+
+        console.log('📢 [NotificationsView] Raw notifications:', rawNotifications);
 
         // Map backend fields to template-expected fields
-        const notifications = rawNotifications.map(n => ({
-            id: n.id,
-            type: n.type,
-            title: n.title,
-            content: n.message || n.content || '',
-            isRead: n.is_read ?? n.isRead ?? false,
-            createdAt: n.created_at || n.createdAt,
-            bookingId: n.booking_id || n.bookingId,
-            reviewId: n.review_id || n.reviewId,
-            accountId: n.account_id || n.accountId
-        }));
+        // API uses target_type (BOOKING, REVIEW, ACCOUNT) and target_id
+        const notifications = rawNotifications.map(n => {
+            // Determine related IDs based on target_type
+            let bookingId = null, reviewId = null, accountId = null;
+            
+            if (n.target_type === 'BOOKING') {
+                bookingId = n.target_id;
+            } else if (n.target_type === 'REVIEW') {
+                reviewId = n.target_id;
+            } else if (n.target_type === 'ACCOUNT' || n.target_type === 'STAFF') {
+                accountId = n.target_id;
+            }
+            
+            // Also support legacy fields if present
+            bookingId = bookingId || n.booking_id || n.bookingId;
+            reviewId = reviewId || n.review_id || n.reviewId;
+            accountId = accountId || n.account_id || n.accountId;
+            
+            return {
+                id: n.id,
+                type: n.type,
+                title: n.title,
+                content: n.message || n.content || '',
+                isRead: n.is_read ?? n.isRead ?? false,
+                createdAt: n.created_at || n.createdAt,
+                bookingId,
+                reviewId,
+                accountId
+            };
+        });
+
+        console.log('📢 [NotificationsView] Mapped notifications:', notifications);
+
+        // Compute pagination values like bookings view
+        const limit = parseInt(params.limit) || 20;
+        const offset = parseInt(params.offset) || 0;
+        const total = bePagination.total || notifications.length;
+        const currentPage = Math.floor(offset / limit) + 1;
+        const totalPages = Math.ceil(total / limit) || 1;
+        
+        const pagination = {
+            total,
+            limit,
+            offset,
+            currentPage,
+            totalPages,
+            hasPrev: currentPage > 1,
+            hasNext: currentPage < totalPages,
+            from: total === 0 ? 0 : offset + 1,
+            to: Math.min(offset + limit, total)
+        };
 
         await App.renderPage('notifications', { data: notifications, pagination }, true);
 
@@ -126,18 +173,20 @@ export const NotificationsView = {
         }
 
 
-
+        // Pagination handler - use offset like bookings
         window.changePage = (page) => {
+            const limit = 20; // default limit
+            const offset = (page - 1) * limit;
             const params = new URLSearchParams(window.location.hash.split('?')[1] || '');
-            params.set('tab', currentTab);
-            params.set('page', page);
+            params.set('limit', limit);
+            params.set('offset', offset);
             Router.navigate(`/notifications?${params.toString()}`);
         };
 
         const resetFilterBtn = document.querySelector('[data-action="reset-filters"]');
         if (resetFilterBtn) {
             resetFilterBtn.addEventListener('click', () => {
-                Router.navigate(`/notifications?tab=${currentTab}`);
+                Router.navigate('/notifications');
             });
         }
     },
@@ -682,14 +731,54 @@ export const NotificationsView = {
         try {
             const result = await NotificationsService.markAsRead(notificationId);
             if (result.success) {
+                // Update notification item in list
                 const notification = document.querySelector(`[data-notification-id="${notificationId}"]`);
                 if (notification) {
-                    notification.classList.remove('unread');
+                    notification.classList.remove('unread', 'bg-primary-50/50');
+                    const unreadDot = notification.querySelector('.bg-primary-500.rounded-full');
+                    if (unreadDot) unreadDot.remove();
                     notification.querySelector('[data-action="mark-read"]')?.remove();
                 }
+                
+                // Update header notification if exists
+                const headerNoti = document.querySelector(`.notification-dropdown-item[data-notification-id="${notificationId}"]`);
+                if (headerNoti) {
+                    headerNoti.classList.remove('bg-primary-50/50');
+                }
+                
+                // Update sidebar unread count badge
+                this.updateSidebarUnreadCount(-1);
             }
         } catch (error) {
-            App.showError('Có lỗi xảy ra. Vui lòng thử lại.');
+            console.warn('Error marking notification as read:', error);
+        }
+    },
+    
+    /**
+     * Update sidebar unread count badge (decrement or set specific value)
+     */
+    updateSidebarUnreadCount(delta = 0) {
+        const badge = document.getElementById('sidebarNotifBadge');
+        if (badge) {
+            const current = parseInt(badge.textContent) || 0;
+            const newCount = Math.max(0, current + delta);
+            if (newCount === 0) {
+                badge.remove();
+            } else {
+                badge.textContent = newCount;
+            }
+        }
+        
+        // Also update header notification badge if exists
+        const headerBadge = document.getElementById('headerNotifBadge');
+        if (headerBadge) {
+            const current = parseInt(headerBadge.textContent) || 0;
+            const newCount = Math.max(0, current + delta);
+            if (newCount === 0) {
+                headerBadge.remove();
+            } else {
+                headerBadge.textContent = newCount;
+            }
         }
     },
 

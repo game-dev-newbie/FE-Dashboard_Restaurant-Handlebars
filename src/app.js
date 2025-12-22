@@ -192,21 +192,25 @@ const App = {
                     }
                     const notifResult = await NotificationsService.getList();
                     let notificationsList = [];
+                    
+                    // Helper to check if notification is unread (handles both snake_case and camelCase)
+                    const isUnread = (n) => !(n.is_read || n.isRead);
+                    
                     if (Array.isArray(notifResult)) {
                         notificationsList = notifResult;
-                        sidebarData.unreadCount = notifResult.filter(n => !n.isRead).length;
+                        sidebarData.unreadCount = notifResult.filter(isUnread).length;
                     } else if (notifResult && notifResult.data) {
                         // Handle { data: { items: [] } } or { data: [] }
                         const nData = notifResult.data;
                         if (Array.isArray(nData)) {
                              notificationsList = nData;
-                             sidebarData.unreadCount = nData.filter(n => !n.isRead).length;
+                             sidebarData.unreadCount = nData.filter(isUnread).length;
                         } else if (nData.items) {
                              notificationsList = nData.items;
                              // Use unread_count from API if available, else count manually
                              sidebarData.unreadCount = (typeof nData.unread_count !== 'undefined') 
                                 ? nData.unread_count 
-                                : nData.items.filter(n => !n.isRead).length;
+                                : nData.items.filter(isUnread).length;
                         }
                     } else if (notifResult && typeof notifResult.unreadCount !== 'undefined') {
                         sidebarData.unreadCount = notifResult.unreadCount;
@@ -215,16 +219,35 @@ const App = {
                     }
                     // Pass recent notifications for header dropdown (latest 5)
                     // Map API fields (snake_case) to template fields (camelCase)
-                    sidebarData.recentNotifications = notificationsList.slice(0, 5).map(n => ({
-                        id: n.id,
-                        type: n.type,
-                        title: n.title,
-                        content: n.message || n.content,
-                        isRead: n.is_read || n.isRead,
-                        bookingId: n.booking_id || n.bookingId,
-                        reviewId: n.review_id || n.reviewId,
-                        accountId: n.account_id || n.accountId
-                    }));
+                    // Handle target_type/target_id like notifications view
+                    sidebarData.recentNotifications = notificationsList.slice(0, 5).map(n => {
+                        // Determine related IDs based on target_type
+                        let bookingId = null, reviewId = null, accountId = null;
+                        
+                        if (n.target_type === 'BOOKING') {
+                            bookingId = n.target_id;
+                        } else if (n.target_type === 'REVIEW') {
+                            reviewId = n.target_id;
+                        } else if (n.target_type === 'ACCOUNT' || n.target_type === 'STAFF') {
+                            accountId = n.target_id;
+                        }
+                        
+                        // Also support legacy fields if present
+                        bookingId = bookingId || n.booking_id || n.bookingId;
+                        reviewId = reviewId || n.review_id || n.reviewId;
+                        accountId = accountId || n.account_id || n.accountId;
+                        
+                        return {
+                            id: n.id,
+                            type: n.type,
+                            title: n.title,
+                            content: n.message || n.content,
+                            isRead: n.is_read || n.isRead,
+                            bookingId,
+                            reviewId,
+                            accountId
+                        };
+                    });
                     
                     // Fetch booking counts for sidebar badge (limit 10 to avoid BE validation error)
                     try {

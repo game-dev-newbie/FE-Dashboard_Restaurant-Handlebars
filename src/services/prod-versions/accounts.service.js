@@ -30,8 +30,31 @@ export const AccountsService = {
     },
 
     async getById(id) {
-        const response = await ApiService.get(`/staff/${id}`);
-        return response.data || response;
+        // BE doesn't have GET /staff/:id endpoint, so fetch from list
+        try {
+            const response = await ApiService.get('/staff');
+            const data = response.data || response;
+            const list = Array.isArray(data) ? data : (data.items || []);
+            const staff = list.find(s => s.id === parseInt(id) || s.id === id);
+            
+            if (staff) {
+                // Map to expected format for view
+                return {
+                    id: staff.id,
+                    name: staff.full_name || staff.name,
+                    email: staff.email,
+                    phone: staff.phone,
+                    role: staff.role,
+                    status: staff.status === 'INVITED' ? 'PENDING' : staff.status,
+                    avatar: staff.avatar_url,
+                    createdAt: staff.created_at
+                };
+            }
+            return null;
+        } catch (error) {
+            console.warn('Could not fetch staff by id:', error);
+            return null;
+        }
     },
 
     async approve(id) {

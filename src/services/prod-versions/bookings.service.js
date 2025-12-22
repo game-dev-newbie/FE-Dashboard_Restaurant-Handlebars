@@ -12,8 +12,33 @@ export const BookingsService = {
     },
 
     async getById(id) {
-        const response = await ApiService.get(`/bookings/${id}`);
-        return response.data || response;
+        try {
+            const response = await ApiService.get(`/bookings/${id}`);
+            const booking = response.data || response;
+            
+            if (booking) {
+                // Map BE fields (snake_case) to FE expected fields (camelCase)
+                return {
+                    id: booking.id,
+                    code: booking.code || `BK-${booking.id}`,
+                    customerName: booking.customer_name || booking.user?.display_name || booking.user?.name || 'N/A',
+                    customerPhone: booking.phone || booking.user?.phone || 'N/A',
+                    guests: booking.people_count || booking.guests,
+                    datetime: booking.booking_time || booking.datetime,
+                    status: booking.status,
+                    tableId: booking.table_id,
+                    tableName: booking.table?.name || (booking.table_id ? `Bàn ${booking.table_id}` : 'Chưa gán'),
+                    deposit: booking.deposit_amount || booking.deposit || 0,
+                    paymentStatus: booking.payment_status,
+                    notes: booking.note || booking.notes || '',
+                    createdAt: booking.created_at
+                };
+            }
+            return null;
+        } catch (error) {
+            console.warn('Could not fetch booking by id:', error);
+            return null;
+        }
     },
 
     async confirm(id) {

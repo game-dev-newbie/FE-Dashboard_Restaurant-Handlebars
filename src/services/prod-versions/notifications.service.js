@@ -7,20 +7,32 @@ export const NotificationsService = {
     async getList(params = {}) {
         try {
             const query = new URLSearchParams(params).toString();
+            console.log('📢 [Notifications] Fetching:', `/notifications${query ? '?' + query : ''}`);
             const response = await ApiService.get(`/notifications${query ? '?' + query : ''}`);
-            // Handle various response formats
+            console.log('📢 [Notifications] Response:', response);
+            
+            // BE returns: { success: true, data: { items: [...], pagination: {...} } }
             const data = response.data || response;
-            return { data: Array.isArray(data) ? data : [], success: true };
+            // data can be { items: [...], pagination: {...} } or directly an array
+            const items = data.items || (Array.isArray(data) ? data : []);
+            const pagination = data.pagination || {};
+            
+            return { 
+                data: { items, pagination }, 
+                success: true 
+            };
         } catch (error) {
             console.warn('Could not fetch notifications:', error);
-            return { data: [], success: false };
+            return { data: { items: [], pagination: {} }, success: false };
         }
     },
 
     async getUnreadCount() {
         try {
             const response = await ApiService.get('/notifications/unread-count');
-            return response.data || response;
+            // BE returns: { data: { unreadCount: 5 } }
+            const data = response.data || response;
+            return { count: data.unreadCount || data.count || 0 };
         } catch (error) {
             return { count: 0 };
         }

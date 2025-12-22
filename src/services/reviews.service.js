@@ -16,8 +16,32 @@ export const ReviewsService = {
     },
 
     async getById(id) {
-        const response = await ApiService.get(`/reviews/${id}`);
-        return response.data || response;
+        // BE doesn't have GET /reviews/:id endpoint, so fetch from list
+        try {
+            const response = await ApiService.get('/reviews');
+            const data = response.data || response;
+            const list = Array.isArray(data) ? data : (data.items || []);
+            const review = list.find(r => r.id === parseInt(id) || r.id === id);
+            
+            if (review) {
+                // Map to expected format for view
+                return {
+                    id: review.id,
+                    bookingId: review.booking_id,
+                    customerName: review.user?.display_name || review.user?.name || 'Khách hàng',
+                    customerAvatar: review.user?.avatar_url,
+                    rating: review.rating,
+                    content: review.comment || review.content || '',
+                    ownerReply: review.reply_comment || review.ownerReply,
+                    status: review.status,
+                    createdAt: review.created_at
+                };
+            }
+            return null;
+        } catch (error) {
+            console.warn('Could not fetch review by id:', error);
+            return null;
+        }
     },
 
     async reply(id, reply) {

@@ -197,7 +197,7 @@
                 <i class="fa-solid fa-chevron-left"></i>
             </button>
             <span class="px-3 py-1 bg-stone-100 rounded text-sm font-medium flex items-center">
-                Trang {{pagination.currentPage}} / {{pagination.totalPages}}
+                {{pagination.currentPage}} / {{pagination.totalPages}}
             </span>
             <button class="btn btn-sm btn-secondary" onclick="changePage({{add pagination.currentPage 1}})" {{#unless pagination.hasNext}}disabled{{/unless}}>
                 <i class="fa-solid fa-chevron-right"></i>
