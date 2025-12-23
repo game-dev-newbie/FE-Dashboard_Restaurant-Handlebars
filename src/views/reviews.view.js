@@ -15,13 +15,13 @@ export const ReviewsView = {
         // Normalize data structure
         const reviewsData = result.data || {};
         const rawReviews = Array.isArray(reviewsData) ? reviewsData : (reviewsData.items || []);
-        const pagination = reviewsData.pagination || {};
+        const bePagination = reviewsData.pagination || {};
 
         // Map backend fields to template-expected fields
         const reviews = rawReviews.map(r => ({
             id: r.id,
-            customerName: r.user?.display_name || r.customerName || 'Khách hàng',
-            customerAvatar: r.user?.avatar_url || r.customerAvatar,
+            customerName: r.User?.display_name || r.user?.display_name || r.customerName || 'Khách hàng',
+            customerAvatar: r.User?.avatar_url || r.user?.avatar_url || r.customerAvatar,
             rating: r.rating,
             content: r.comment || r.content || '',
             ownerReply: r.reply_comment || r.ownerReply || null,
@@ -29,11 +29,28 @@ export const ReviewsView = {
             createdAt: r.created_at || r.createdAt
         }));
 
+        // Compute pagination values
+        const page = parseInt(params.page) || 1;
+        const limit = 10;
+        const total = bePagination.total || reviews.length;
+        const offset = (page - 1) * limit;
+        const totalPages = Math.ceil(total / limit) || 1;
+
+        const pagination = {
+            total,
+            currentPage: page,
+            totalPages,
+            hasPrev: page > 1,
+            hasNext: page < totalPages,
+            from: total === 0 ? 0 : offset + 1,
+            to: Math.min(offset + limit, total)
+        };
+
         // Render page with data
         await App.renderPage('reviews', { 
             data: reviews, 
             pagination, 
-            total: pagination.total || reviews.length 
+            total
         }, true);
         
         // Bind events and pre-fill form

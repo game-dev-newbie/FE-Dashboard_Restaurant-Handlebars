@@ -29,7 +29,7 @@ export const OverviewService = {
             const tomorrow = new Date(today.getTime() + 24*60*60*1000);
             
             const todayBookingsArr = Array.isArray(bookings) ? bookings.filter(b => {
-                const bookingDate = new Date(b.booking_date || b.date);
+                const bookingDate = new Date(b.booking_time || b.booking_date || b.date);
                 return bookingDate >= today && bookingDate < tomorrow;
             }) : [];
             
@@ -41,7 +41,7 @@ export const OverviewService = {
             const guestsToday = todayBookingsArr.reduce((sum, b) => {
                 // Only count valid bookings
                 if (b.status === 'CANCELLED' || b.status === 'REJECTED') return sum;
-                return sum + (parseInt(b.guest_count) || 0);
+                return sum + (parseInt(b.people_count) || parseInt(b.guest_count) || 0);
             }, 0);
 
             // Calculate Total Capacity
@@ -53,23 +53,23 @@ export const OverviewService = {
             
             const upcomingBookings = Array.isArray(bookings) ? bookings
                 .filter(b => {
-                    const bookingDate = new Date(b.booking_date || b.date);
+                    const bookingDate = new Date(b.booking_time || b.booking_date || b.date);
                     return bookingDate >= now && (b.status === 'PENDING' || b.status === 'CONFIRMED');
                 })
-                .sort((a, b) => new Date(a.booking_date) - new Date(b.booking_date))
+                .sort((a, b) => new Date(a.booking_time || a.booking_date) - new Date(b.booking_time || b.booking_date))
                 .slice(0, 5) : [];
             
             // Format upcoming bookings for display
             const formattedUpcoming = upcomingBookings.map(b => {
-                const date = new Date(b.booking_date || b.date);
+                const date = new Date(b.booking_time || b.booking_date || b.date);
                 return {
                     id: b.id,
                     time: date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
                     date: date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' }),
-                    customerName: b.customer_name || 'Khách vãng lai',
-                    customerPhone: b.customer_phone || '',
-                    guests: b.guest_count || 0,
-                    table: b.table_name || (b.Table ? b.Table.name : null),
+                    customerName: b.customer_name || b.user?.display_name || 'Khách vãng lai',
+                    customerPhone: b.phone || b.customer_phone || '',
+                    guests: b.people_count || b.guest_count || 0,
+                    table: b.table?.name || b.table_name || null,
                     status: b.status
                 };
             });

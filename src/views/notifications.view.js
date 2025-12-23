@@ -13,7 +13,7 @@ export const NotificationsView = {
         const params = Router.getQueryParams();
         
         // Ensure defaults for pagination - use limit/offset like bookings
-        if (!params.limit) params.limit = 20;
+        if (!params.limit) params.limit = 10;
         if (!params.offset) params.offset = 0;
         
         const result = await NotificationsService.getList(params);
@@ -60,7 +60,7 @@ export const NotificationsView = {
         console.log('📢 [NotificationsView] Mapped notifications:', notifications);
 
         // Compute pagination values like bookings view
-        const limit = parseInt(params.limit) || 20;
+        const limit = parseInt(params.limit) || 10;
         const offset = parseInt(params.offset) || 0;
         const total = bePagination.total || notifications.length;
         const currentPage = Math.floor(offset / limit) + 1;
@@ -175,7 +175,7 @@ export const NotificationsView = {
 
         // Pagination handler - use offset like bookings
         window.changePage = (page) => {
-            const limit = 20; // default limit
+            const limit = 10; // default limit
             const offset = (page - 1) * limit;
             const params = new URLSearchParams(window.location.hash.split('?')[1] || '');
             params.set('limit', limit);
@@ -198,21 +198,28 @@ export const NotificationsView = {
         
         const options = {
             booking: [
-                { val: 'BOOKING_CREATED', label: 'Đặt bàn mới' },
-                { val: 'BOOKING_UPDATED', label: 'Cập nhật đặt bàn' },
-                { val: 'BOOKING_CONFIRMED', label: 'Xác nhận booking' },
+                { val: 'BOOKING_CREATED', label: 'Booking mới' },
+                { val: 'BOOKING_UPDATED', label: 'Cập nhật booking' },
+                { val: 'BOOKING_CONFIRMED', label: 'Xác nhận' },
                 { val: 'BOOKING_CANCELLED', label: 'Huỷ booking' },
-                { val: 'BOOKING_CHECKED_IN', label: 'Check-in thành công' },
+                { val: 'BOOKING_CHECKED_IN', label: 'Check-in' },
                 { val: 'BOOKING_NO_SHOW', label: 'Khách không đến' },
                 { val: 'BOOKING_PAYMENT_SUCCESS', label: 'Thanh toán thành công' },
-                { val: 'BOOKING_REFUND_SUCCESS', label: 'Hoàn tiền thành công' }
+                { val: 'BOOKING_PAYMENT_FAILED', label: 'Thanh toán thất bại' },
+                { val: 'BOOKING_REFUND_SUCCESS', label: 'Hoàn tiền' },
+                { val: 'BOOKING_REMINDER', label: 'Nhắc lịch' }
             ],
             review: [
-                { val: 'REVIEW_CREATED', label: 'Đánh giá mới' }
+                { val: 'REVIEW_CREATED', label: 'Đánh giá mới' },
+                { val: 'REVIEW_REPLIED', label: 'Phản hồi đánh giá' }
             ],
             staff: [
                 { val: 'STAFF_REGISTERED', label: 'Nhân viên mới' },
                 { val: 'STAFF_STATUS_CHANGED', label: 'Trạng thái nhân viên' }
+            ],
+            account: [
+                { val: 'PASSWORD_CHANGED', label: 'Đổi mật khẩu' },
+                { val: 'PROFILE_UPDATED', label: 'Cập nhật thông tin' }
             ],
             system: [
                 { val: 'GENERIC', label: 'Thông báo chung' }
@@ -439,11 +446,44 @@ export const NotificationsView = {
                     if (titleEl) titleEl.textContent = 'Chi tiết đánh giá';
                     await this.renderReviewDetailContent(data.reviewId, contentEl, footerEl, App);
                     break;
+                
+                case 'REVIEW_REPLIED':
+                    if (titleEl) titleEl.textContent = 'Phản hồi đánh giá';
+                    await this.renderReviewDetailContent(data.reviewId, contentEl, footerEl, App);
+                    break;
                     
                 case 'STAFF_REGISTERED':
                 case 'STAFF_STATUS_CHANGED':
                     if (titleEl) titleEl.textContent = 'Thông tin nhân viên';
                     await this.renderMemberApprovalContent(data.accountId, contentEl, footerEl, App);
+                    break;
+                
+                case 'PASSWORD_CHANGED':
+                    if (titleEl) titleEl.textContent = 'Đổi mật khẩu';
+                    contentEl.innerHTML = `
+                        <div class="text-center py-6">
+                            <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="fa-solid fa-key text-3xl text-blue-600"></i>
+                            </div>
+                            <p class="text-stone-700 font-medium">Mật khẩu đã được thay đổi</p>
+                            <p class="text-stone-500 text-sm mt-1">Mật khẩu của bạn đã được cập nhật thành công.</p>
+                        </div>
+                    `;
+                    footerEl.innerHTML = `<button class="btn btn-secondary" onclick="closeModal('notificationDetailModal')">Đóng</button>`;
+                    break;
+                
+                case 'PROFILE_UPDATED':
+                    if (titleEl) titleEl.textContent = 'Cập nhật thông tin';
+                    contentEl.innerHTML = `
+                        <div class="text-center py-6">
+                            <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="fa-solid fa-user-check text-3xl text-blue-600"></i>
+                            </div>
+                            <p class="text-stone-700 font-medium">Thông tin đã được cập nhật</p>
+                            <p class="text-stone-500 text-sm mt-1">Thông tin cá nhân của bạn đã được cập nhật thành công.</p>
+                        </div>
+                    `;
+                    footerEl.innerHTML = `<button class="btn btn-secondary" onclick="closeModal('notificationDetailModal')">Đóng</button>`;
                     break;
                     
                 default:
