@@ -23,7 +23,7 @@ export const NotificationsView = {
         const rawNotifications = notifData.items || [];
         const bePagination = notifData.pagination || {};
 
-        console.log('📢 [NotificationsView] Raw notifications:', rawNotifications);
+        // console.log('📢 [NotificationsView] Raw notifications:', rawNotifications);
 
         // Map backend fields to template-expected fields
         // API uses target_type (BOOKING, REVIEW, ACCOUNT) and target_id
@@ -57,7 +57,7 @@ export const NotificationsView = {
             };
         });
 
-        console.log('📢 [NotificationsView] Mapped notifications:', notifications);
+        // console.log('📢 [NotificationsView] Mapped notifications:', notifications);
 
         // Compute pagination values like bookings view
         const limit = parseInt(params.limit) || 10;
