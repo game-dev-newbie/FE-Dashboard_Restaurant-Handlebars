@@ -7,9 +7,9 @@ export const NotificationsService = {
     async getList(params = {}) {
         try {
             const query = new URLSearchParams(params).toString();
-            console.log('📢 [Notifications] Fetching:', `/notifications${query ? '?' + query : ''}`);
-            const response = await ApiService.get(`/notifications${query ? '?' + query : ''}`);
-            console.log('📢 [Notifications] Response:', response);
+            // console.log('📢 [Notifications] Fetching:', `/notifications${query ? '?' + query : ''}`);
+            // const response = await ApiService.get(`/notifications${query ? '?' + query : ''}`);
+            // console.log('📢 [Notifications] Response:', response);
             
             // BE returns: { success: true, data: { items: [...], pagination: {...} } }
             const data = response.data || response;
@@ -47,6 +47,11 @@ export const NotificationsService = {
     async markAllAsRead() {
         // BE uses PATCH not POST
         const response = await ApiService.patch('/notifications/read-all', {});
+        return { success: true, ...response };
+    },
+
+    async delete(id) {
+        const response = await ApiService.delete(`/notifications/${id}`);
         return { success: true, ...response };
     }
 };
