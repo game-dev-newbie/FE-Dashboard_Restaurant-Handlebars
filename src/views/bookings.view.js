@@ -50,6 +50,17 @@ export const BookingsView = {
         pagination.from = total === 0 ? 0 : offset + 1;
         pagination.to = Math.min(offset + limit, total);
 
+        // Fetch tables first for lookup
+        const tablesResult = await TablesService.getList();
+        const tablesData = tablesResult.data || {};
+        const tables = Array.isArray(tablesData) ? tablesData : (tablesData.items || tablesData.data || []);
+        
+        // Create lookup map: table_id -> table_name
+        const tableMap = {};
+        tables.forEach(t => {
+            tableMap[t.id] = t.name;
+        });
+
         // Map API response (snake_case) to View format (camelCase)
         const bookings = bookingsData.map(b => ({
             id: b.id,
@@ -58,15 +69,12 @@ export const BookingsView = {
             customerPhone: b.phone || b.user?.phone,
             guests: b.people_count,
             datetime: b.booking_time,
-            tableName: b.table?.name || b.table_name || null,
+            // Lookup table name: prefer nested table object, then lookup from tableMap
+            tableName: b.table?.name || b.table_name || (b.table_id ? tableMap[b.table_id] : null),
             tableId: b.table_id,
             status: b.status,
             deposit: b.deposit_amount
         }));
-
-        const tablesResult = await TablesService.getList();
-        const tablesData = tablesResult.data || {};
-        const tables = Array.isArray(tablesData) ? tablesData : (tablesData.items || tablesData.data || []);
 
         await App.renderPage('bookings', { data: bookings, total, tables, pagination }, true);
 
